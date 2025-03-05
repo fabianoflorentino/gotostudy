@@ -1,0 +1,19 @@
+FROM golang:alpine3.21 AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN apk update && apk upgrade --no-cache \
+    && go mod download \
+    && go build -o /go/bin/gts /app/cmd/gotostudy/main.go
+
+FROM alpine:3.21 AS gotostudy
+
+WORKDIR /app
+
+COPY --from=build /go/bin/gts /usr/local/bin/gts
+
+ENTRYPOINT ["/bin/sh"]
+
+CMD [ "-c", "while true; do echo 'Im running'; sleep 300; done" ]

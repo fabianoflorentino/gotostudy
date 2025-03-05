@@ -1,0 +1,12 @@
+FROM golang:alpine3.21 AS build
+
+WORKDIR /app
+
+COPY . .
+
+RUN apk update && apk upgrade --no-cache \
+    && go mod download
+
+ENTRYPOINT ["/bin/sh"]
+
+CMD [ "-c", "while true; do echo 'Im running'; sleep 300; done" ]
