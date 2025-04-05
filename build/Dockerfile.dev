@@ -9,4 +9,4 @@ RUN apk update && apk upgrade --no-cache \
 
 ENTRYPOINT ["/bin/sh"]
 
-CMD [ "-c", "while true; do echo 'Im running'; sleep 300; done" ]
+CMD [ "-c", "while true; do echo 'Im study Golang!'; sleep 300; done" ]

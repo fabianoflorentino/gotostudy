@@ -1,2 +1,3 @@
 # gotostudy
-Go to Study
+
+Go to Study!
