@@ -1,14 +1,31 @@
 ---
 
 services:
+  db:
+    image: postgres:latest
+    container_name: postgres
+    env_file: ./config/.env
+    restart: unless-stopped
+    ports:
+      - ${POSTGRES_LOCAL_PORT:-5432}:5432
+    networks:
+      - gts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gts"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    tty: true
+    stdin_open: true
   gts:
     image: fabianoflorentino/gts:v0.0.1
-    container_name: gts
+    container_name: gtsdb
+    env_file: ./config/.env
     build:
       context: .
       dockerfile: build/Dockerfile.dev
     volumes:
-      - .:/app
+      - .:/gotostudy
     networks:
       - gts
     healthcheck:
@@ -16,6 +33,9 @@ services:
       interval: 30s
       timeout: 30s
       retries: 3
+    depends_on:
+      db:
+        condition: service_started
 
 networks:
   gts:
