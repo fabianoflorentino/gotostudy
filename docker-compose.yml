@@ -2,7 +2,7 @@
 services:
   db:
     image: postgres:latest
-    container_name: postgres
+    container_name: gtsdb
     hostname: gtsdb
     env_file: ./config/.env
     restart: unless-stopped
@@ -19,7 +19,7 @@ services:
     stdin_open: true
   gts:
     image: fabianoflorentino/gts:v0.0.1
-    container_name: gtsdb
+    container_name: gts
     hostname: gts
     env_file: ./config/.env
     build:
