@@ -1,9 +1,8 @@
 package database
 
-import (
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
 type Database interface {
-	Conn() (*gorm.DB, error)
+	Connector() *gorm.DB
+	Close() error
 }
