@@ -27,16 +27,16 @@ type Postgres struct {
 	db *gorm.DB
 }
 
-func New() (*Postgres, error) {
+func PgSqlInstance() (Database, error) {
 	return &Postgres{}, nil
 }
 
 // Conn establishes a connection to the PostgreSQL database using GORM.
 // It uses the connection string constructed by setPostgresConnectionString.
 // If the connection is successful, it returns a pointer to the gorm.DB object.
-func (p *Postgres) Conn() (*gorm.DB, error) {
+func (p *Postgres) Connector() *gorm.DB {
 	if p.db != nil {
-		return p.db, nil
+		return p.db
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -45,12 +45,13 @@ func (p *Postgres) Conn() (*gorm.DB, error) {
 	}), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
-		return nil, err
+		return nil
 	}
 
 	log.Println("Database connection established")
 	p.db = db
-	return db, nil
+
+	return db
 }
 
 // Close closes the database connection.
@@ -75,20 +76,6 @@ func (p *Postgres) Close() error {
 
 	log.Println("Database connection closed")
 	return nil
-}
-
-func (p *Postgres) AutoMigrate() {
-	gormDB, err := p.Conn()
-	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
-		return
-	}
-	err = gormDB.AutoMigrate()
-	if err != nil {
-		log.Fatalf("failed to auto migrate: %v", err)
-		return
-	}
-	log.Println("Database auto migration completed")
 }
 
 // setPostgresConnectionString constructs the connection string for PostgreSQL
