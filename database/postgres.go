@@ -23,7 +23,9 @@ var (
 	timezone = os.Getenv("POSTGRES_TIMEZONE")
 )
 
-type Postgres struct{}
+type Postgres struct {
+	db *gorm.DB
+}
 
 func New() (*Postgres, error) {
 	return &Postgres{}, nil
@@ -33,6 +35,10 @@ func New() (*Postgres, error) {
 // It uses the connection string constructed by setPostgresConnectionString.
 // If the connection is successful, it returns a pointer to the gorm.DB object.
 func (p *Postgres) Conn() (*gorm.DB, error) {
+	if p.db != nil {
+		return p.db, nil
+	}
+
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  setPostgresConnectionString(),
 		PreferSimpleProtocol: true,
@@ -43,6 +49,7 @@ func (p *Postgres) Conn() (*gorm.DB, error) {
 	}
 
 	log.Println("Database connection established")
+	p.db = db
 	return db, nil
 }
 
@@ -50,12 +57,11 @@ func (p *Postgres) Conn() (*gorm.DB, error) {
 // It retrieves the database connection using the Conn method and then
 // calls the Close method on the underlying sql.DB object.
 func (p *Postgres) Close() error {
-	db, err := p.Conn()
-	if err != nil {
-		log.Fatalf("failed to close database: %v", err)
-		return err
+	if p.db == nil {
+		return nil
 	}
-	sqlDB, err := db.DB()
+
+	sqlDB, err := p.db.DB()
 	if err != nil {
 		log.Fatalf("failed to get sqlDB: %v", err)
 		return err
@@ -65,9 +71,24 @@ func (p *Postgres) Close() error {
 		log.Fatalf("failed to close sqlDB: %v", err)
 		return err
 	}
+	defer sqlDB.Close()
 
 	log.Println("Database connection closed")
 	return nil
+}
+
+func (p *Postgres) AutoMigrate() {
+	gormDB, err := p.Conn()
+	if err != nil {
+		log.Fatalf("failed to connect to database: %v", err)
+		return
+	}
+	err = gormDB.AutoMigrate()
+	if err != nil {
+		log.Fatalf("failed to auto migrate: %v", err)
+		return
+	}
+	log.Println("Database auto migration completed")
 }
 
 // setPostgresConnectionString constructs the connection string for PostgreSQL
