@@ -1,7 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/fabianoflorentino/gotostudy/database/migration"
+)
+
+func init() {
+	migration.Run()
+}
 
 func main() {
-	fmt.Println("Go to study!")
+	log.Fatal(http.ListenAndServe(os.Getenv("GTS_LOCAL_PORT"), nil).Error())
 }
