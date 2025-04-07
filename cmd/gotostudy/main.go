@@ -13,5 +13,5 @@ func init() {
 }
 
 func main() {
-	log.Fatal(http.ListenAndServe(os.Getenv("GTS_LOCAL_PORT"), nil).Error())
+	log.Fatal(http.ListenAndServe(os.Getenv("GTS_LOCAL_PORT"), nil))
 }
