@@ -3,6 +3,6 @@ package database
 import "gorm.io/gorm"
 
 type Database interface {
-	Connector() *gorm.DB
+	Connect() (*gorm.DB, error)
 	Close() error
 }
