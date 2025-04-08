@@ -7,7 +7,7 @@ services:
     env_file: ./config/.env
     restart: unless-stopped
     ports:
-      - ${POSTGRES_LOCAL_PORT:-5432}:5432
+      - ${POSTGRES_LOCAL_PORT:-35432}:5432
     networks:
       - gts
     healthcheck:
