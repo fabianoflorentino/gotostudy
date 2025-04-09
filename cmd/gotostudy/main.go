@@ -15,7 +15,7 @@ var (
 )
 
 func init() {
-	if err := os.Getenv(GTS_LOCAL_PORT); err == "" {
+	if err := GTS_LOCAL_PORT; err == "" {
 		log.Fatal(errormsg.ErrEnvNotSet, GTS_LOCAL_PORT)
 	}
 
@@ -25,5 +25,5 @@ func init() {
 func main() {
 	r := routes.InitializeRoutes()
 
-	log.Fatal(http.ListenAndServe(":"+os.Getenv(GTS_LOCAL_PORT), r))
+	log.Fatal(http.ListenAndServe(":"+GTS_LOCAL_PORT, r))
 }
