@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/fabianoflorentino/gotostudy/database/migration"
-	"github.com/fabianoflorentino/gotostudy/internal/errormsg"
 	"github.com/fabianoflorentino/gotostudy/routes"
 )
 
@@ -16,7 +15,7 @@ var (
 
 func init() {
 	if err := GTS_LOCAL_PORT; err == "" {
-		log.Fatal(errormsg.ErrEnvNotSet, GTS_LOCAL_PORT)
+		log.Fatal("Environment variable not set", GTS_LOCAL_PORT)
 	}
 
 	migration.Run()
