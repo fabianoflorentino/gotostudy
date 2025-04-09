@@ -32,7 +32,7 @@ services:
     networks:
       - gts
     healthcheck:
-      test: ["CMD-SHELL", "ps aux | grep 'sleep' || exit 1"]
+      test: ["CMD-SHELL", "ps aux | grep 'air' || exit 1"]
       interval: 30s
       timeout: 30s
       retries: 3
