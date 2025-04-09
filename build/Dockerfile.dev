@@ -1,12 +1,16 @@
-FROM golang:alpine3.21 AS build
+FROM golang:1.24-alpine AS build
 
 WORKDIR /gotostudy
 
 COPY . .
 
 RUN apk update && apk upgrade --no-cache \
-    && go mod download
+    && apk add --no-cache git \
+    && go mod download \
+    && go install github.com/air-verse/air@latest
 
-ENTRYPOINT ["/bin/sh"]
+EXPOSE 8080
 
-CMD [ "-c", "while true; do echo 'Im study Golang!'; sleep 300; done" ]
+ENTRYPOINT ["/go/bin/air"]
+
+CMD ["-c", "/gotostudy/build/air.toml"]
