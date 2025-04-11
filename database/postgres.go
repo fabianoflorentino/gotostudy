@@ -6,12 +6,20 @@
 package database
 
 import (
+	"errors"
 	"log"
 	"os"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
+
+const (
+	createQuery = "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+	checkQuery  = "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto');"
+)
+
+var exists bool
 
 var (
 	username = os.Getenv("POSTGRES_USER")
@@ -75,6 +83,25 @@ func (p *Postgres) Close() error {
 	defer sqlDB.Close()
 
 	log.Println("Database connection closed")
+	return nil
+}
+
+// enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not
+func EnablePgcryptoExtension(db *gorm.DB) error {
+
+	// Check if the extension already exists
+	if err := db.Exec(createQuery).Error; err != nil {
+		return err
+	}
+	// Check if the extension was created successfully
+	if err := db.Raw(checkQuery).Scan(&exists).Error; err != nil {
+		return err
+	}
+	// If the extension was not created, return an error
+	if !exists {
+		return errors.New("pgcrypto extension not found after creation")
+	}
+
 	return nil
 }
 
