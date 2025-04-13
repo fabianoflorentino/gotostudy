@@ -5,6 +5,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/fabianoflorentino/gotostudy/config"
 	"github.com/fabianoflorentino/gotostudy/database"
 	"github.com/fabianoflorentino/gotostudy/internal/http_config"
@@ -28,5 +30,7 @@ func main() {
 	http_config.SetTrustedProxies(r)
 	routes.InitializeRoutes(r)
 
-	r.Run()
+	if err := r.Run(); err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
 }

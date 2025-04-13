@@ -7,6 +7,7 @@ package database
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -51,9 +52,11 @@ func InitDB() {
 	}
 
 	DB = db
-	db.AutoMigrate(
-		&models.User{},
-	)
+	if err := runMigrations(db,
+		models.User{},
+	); err != nil {
+		log.Fatalf("failed to run migrations: %v", err)
+	}
 }
 
 // enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not.
@@ -84,4 +87,24 @@ func setPostgresConnectionString() string {
 	return "user=" + username + " password=" + password + " host=" + host +
 		" port=" + port + " dbname=" + database +
 		" sslmode=" + sslmode + " TimeZone=" + timezone
+}
+
+// runMigrations applies database migrations for the provided models using GORM's AutoMigrate method.
+// It iterates over the given models and attempts to migrate each one. If any migration fails,
+// it returns an error indicating the model that failed and the reason.
+//
+// Parameters:
+//   - db: A pointer to a gorm.DB instance representing the database connection.
+//   - models: A variadic parameter of models (of any type) to be migrated.
+//
+// Returns:
+//   - error: An error if any migration fails, or nil if all migrations succeed.
+func runMigrations(db *gorm.DB, models ...any) error {
+	for _, model := range models {
+		if err := db.AutoMigrate(model); err != nil {
+			return fmt.Errorf("failed to migrate model %T: %v", model, err)
+		}
+	}
+
+	return nil
 }
