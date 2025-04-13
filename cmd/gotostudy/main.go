@@ -1,28 +1,20 @@
 package main
 
 import (
-	"log"
-	"net/http"
-	"os"
-
+	"github.com/fabianoflorentino/gotostudy/config"
 	"github.com/fabianoflorentino/gotostudy/database"
 	"github.com/fabianoflorentino/gotostudy/routes"
-)
-
-var (
-	GTS_LOCAL_PORT string = os.Getenv("GTS_LOCAL_PORT")
+	"github.com/gin-gonic/gin"
 )
 
 func init() {
-	if err := GTS_LOCAL_PORT; err == "" {
-		log.Fatal("Environment variable not set", GTS_LOCAL_PORT)
-	}
-
+	config.LoadEnv()
 	database.InitDB()
 }
 
 func main() {
-	r := routes.InitializeRoutes()
+	r := gin.Default()
+	routes.InitializeRoutes(r)
 
-	log.Fatal(http.ListenAndServe(":"+GTS_LOCAL_PORT, r))
+	r.Run()
 }
