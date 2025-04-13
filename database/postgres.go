@@ -10,16 +10,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/fabianoflorentino/gotostudy/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
-
-const (
-	createQuery = "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
-	checkQuery  = "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto');"
-)
-
-var exists bool
 
 var (
 	username = os.Getenv("POSTGRES_USER")
@@ -31,63 +25,38 @@ var (
 	timezone = os.Getenv("POSTGRES_TIMEZONE")
 )
 
-type Postgres struct {
-	db *gorm.DB
-}
+var (
+	exists bool
+	DB     *gorm.DB
+)
 
-func NewPostgres() (Database, error) {
-	return &Postgres{}, nil
-}
-
-// Conn establishes a connection to the PostgreSQL database using GORM.
-// It uses the connection string constructed by setPostgresConnectionString.
-// If the connection is successful, it returns a pointer to the gorm.DB object.
-func (p *Postgres) Connect() (*gorm.DB, error) {
-	if p.db != nil {
-		return p.db, nil
-	}
-
+func InitDB() {
+	dsn := setPostgresConnectionString()
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  setPostgresConnectionString(),
+		DSN:                  dsn,
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
-		return nil, err
 	}
 
-	log.Println("Database connection established")
-	p.db = db
-
-	return db, nil
-}
-
-// Close closes the database connection.
-// It retrieves the database connection using the Conn method and then
-// calls the Close method on the underlying sql.DB object.
-func (p *Postgres) Close() error {
-	if p.db == nil {
-		return nil
+	// Enable the pgcrypto extension
+	if err := EnablePgcryptoExtension(db); err != nil {
+		log.Fatalf("failed to enable pgcrypto extension: %v", err)
 	}
 
-	sqlDB, err := p.db.DB()
-	if err != nil {
-		log.Fatalf("failed to get sqlDB: %v", err)
-		return err
-	}
-	err = sqlDB.Close()
-	if err != nil {
-		log.Fatalf("failed to close sqlDB: %v", err)
-		return err
-	}
-	defer sqlDB.Close()
-
-	log.Println("Database connection closed")
-	return nil
+	DB = db
+	db.AutoMigrate(
+		&models.User{},
+	)
 }
 
 // enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not
 func EnablePgcryptoExtension(db *gorm.DB) error {
+	var (
+		createQuery = "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+		checkQuery  = "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto');"
+	)
 
 	// Check if the extension already exists
 	if err := db.Exec(createQuery).Error; err != nil {
