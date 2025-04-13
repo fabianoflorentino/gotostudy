@@ -30,6 +30,11 @@ var (
 	DB     *gorm.DB
 )
 
+// InitDB initializes the database connection using GORM and PostgreSQL.
+// It reads the connection parameters from environment variables and sets up
+// the database connection. It also enables the pgcrypto extension if it is not
+// already enabled. The function logs fatal errors if the connection fails or
+// if the extension cannot be enabled.
 func InitDB() {
 	dsn := setPostgresConnectionString()
 	db, err := gorm.Open(postgres.New(postgres.Config{
@@ -51,12 +56,10 @@ func InitDB() {
 	)
 }
 
-// enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not
+// enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not.
 func EnablePgcryptoExtension(db *gorm.DB) error {
-	var (
-		createQuery = "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
-		checkQuery  = "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto');"
-	)
+	createQuery := "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
+	checkQuery := "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto');"
 
 	// Check if the extension already exists
 	if err := db.Exec(createQuery).Error; err != nil {
