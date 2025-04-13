@@ -11,6 +11,7 @@ func InitializeRoutes(router *gin.Engine) {
 		user.GET("", controllers.GetUsers)
 		user.GET("/:id", controllers.GetUserByID)
 		user.POST("", controllers.CreateUser)
+		user.DELETE("/:id", controllers.DeleteUser)
 	}
 
 	health := router.Group("/health")

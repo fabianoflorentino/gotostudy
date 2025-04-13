@@ -17,3 +17,7 @@ func GetUserByID(id uuid.UUID) (models.User, error) {
 func CreateUser(user models.User) (models.User, error) {
 	return repositories.CreateUser(user)
 }
+
+func DeleteUser(id uuid.UUID) error {
+	return repositories.DeleteUser(id)
+}

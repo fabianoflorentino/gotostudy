@@ -69,3 +69,24 @@ func CreateUser(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, createdUser)
 }
+
+// DeleteUser handles the DELETE request to delete a user by ID.
+// It parses the user ID from the URL parameter, calls the service layer to delete the user,
+// and returns a success message as a JSON response.
+func DeleteUser(c *gin.Context) {
+	userID := c.Param("id")
+
+	parsedUserID, err := uuid.Parse(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID format"})
+		return
+	}
+
+	err = services.DeleteUser(parsedUserID)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
+}

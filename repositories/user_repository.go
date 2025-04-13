@@ -8,6 +8,7 @@ import (
 
 var (
 	users []models.User
+	user  models.User
 )
 
 func GetAllUsers() ([]models.User, error) {
@@ -19,8 +20,6 @@ func GetAllUsers() ([]models.User, error) {
 }
 
 func GetUserByID(id uuid.UUID) (models.User, error) {
-	var user models.User
-
 	if err := database.DB.First(&user, id).Error; err != nil {
 		return models.User{}, err
 	}
@@ -34,4 +33,16 @@ func CreateUser(user models.User) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+func DeleteUser(id uuid.UUID) error {
+	if err := database.DB.First(&user, id).Error; err != nil {
+		return err
+	}
+
+	if err := database.DB.Delete(&user).Error; err != nil {
+		return err
+	}
+
+	return nil
 }
