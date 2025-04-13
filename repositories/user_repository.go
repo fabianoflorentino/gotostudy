@@ -27,3 +27,11 @@ func GetUserByID(id uuid.UUID) (models.User, error) {
 
 	return user, nil
 }
+
+func CreateUser(user models.User) (models.User, error) {
+	if err := database.DB.Create(&user).Error; err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
+}

@@ -13,3 +13,7 @@ func GetAllUsers() ([]models.User, error) {
 func GetUserByID(id uuid.UUID) (models.User, error) {
 	return repositories.GetUserByID(id)
 }
+
+func CreateUser(user models.User) (models.User, error) {
+	return repositories.CreateUser(user)
+}

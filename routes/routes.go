@@ -6,14 +6,15 @@ import (
 )
 
 func InitializeRoutes(router *gin.Engine) {
-	r := router.Group("/users")
+	user := router.Group("/users")
 	{
-		r.GET("", controllers.GetUsers)
-		r.GET("/:id", controllers.GetUserByID)
+		user.GET("", controllers.GetUsers)
+		user.GET("/:id", controllers.GetUserByID)
+		user.POST("", controllers.CreateUser)
 	}
 
-	h := router.Group("/health")
+	health := router.Group("/health")
 	{
-		h.GET("", controllers.HealthCheck)
+		health.GET("", controllers.HealthCheck)
 	}
 }

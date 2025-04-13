@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/fabianoflorentino/gotostudy/models"
 	"github.com/fabianoflorentino/gotostudy/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -39,4 +40,21 @@ func GetUserByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+func CreateUser(c *gin.Context) {
+	var user models.User
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	createdUser, err := services.CreateUser(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, createdUser)
 }
