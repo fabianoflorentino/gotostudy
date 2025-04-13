@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/fabianoflorentino/gotostudy/database/migration"
+	"github.com/fabianoflorentino/gotostudy/database"
 	"github.com/fabianoflorentino/gotostudy/routes"
 )
 
@@ -18,7 +18,7 @@ func init() {
 		log.Fatal("Environment variable not set", GTS_LOCAL_PORT)
 	}
 
-	migration.Run()
+	database.InitDB()
 }
 
 func main() {
