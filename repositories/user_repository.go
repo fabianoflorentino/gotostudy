@@ -3,6 +3,7 @@ package repositories
 import (
 	"github.com/fabianoflorentino/gotostudy/database"
 	"github.com/fabianoflorentino/gotostudy/models"
+	"github.com/google/uuid"
 )
 
 var (
@@ -15,4 +16,14 @@ func GetAllUsers() ([]models.User, error) {
 	}
 
 	return users, nil
+}
+
+func GetUserByID(id uuid.UUID) (models.User, error) {
+	var user models.User
+
+	if err := database.DB.First(&user, id).Error; err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }
