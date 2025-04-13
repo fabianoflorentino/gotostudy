@@ -18,6 +18,14 @@ func CreateUser(user models.User) (models.User, error) {
 	return repositories.CreateUser(user)
 }
 
+func UpdateUser(id uuid.UUID, user models.User) (models.User, error) {
+	return repositories.UpdateUser(id, user)
+}
+
+func UpdateUserFields(id uuid.UUID, fields map[string]any) (models.User, error) {
+	return repositories.UpdateUserFields(id, fields)
+}
+
 func DeleteUser(id uuid.UUID) error {
 	return repositories.DeleteUser(id)
 }
