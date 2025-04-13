@@ -9,6 +9,7 @@ func InitializeRoutes(router *gin.Engine) {
 	r := router.Group("/users")
 	{
 		r.GET("", controllers.GetUsers)
+		r.GET("/:id", controllers.GetUserByID)
 	}
 
 	h := router.Group("/health")
