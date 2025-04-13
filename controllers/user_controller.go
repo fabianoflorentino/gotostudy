@@ -12,6 +12,11 @@ import (
 	"github.com/google/uuid"
 )
 
+var (
+	user   models.User
+	fields map[string]any
+)
+
 // GetUsers handles the GET request to retrieve all users.
 // It calls the service layer to get the users and returns them as a JSON response.
 func GetUsers(c *gin.Context) {
@@ -54,8 +59,6 @@ func GetUserByID(c *gin.Context) {
 // It binds the request body to a User model, calls the service layer to create the user,
 // and returns the created user as a JSON response.
 func CreateUser(c *gin.Context) {
-	var user models.User
-
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -82,7 +85,6 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var user models.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -111,7 +113,6 @@ func UpdateUserFields(c *gin.Context) {
 		return
 	}
 
-	var fields map[string]any
 	if err := c.ShouldBindJSON(&fields); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
