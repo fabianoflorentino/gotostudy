@@ -54,6 +54,7 @@ func InitDB() {
 	DB = db
 	if err := runMigrations(db,
 		models.User{},
+		models.Task{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
