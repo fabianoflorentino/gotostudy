@@ -5,32 +5,21 @@
 package main
 
 import (
-	"log"
-
 	"github.com/fabianoflorentino/gotostudy/config"
-	"github.com/fabianoflorentino/gotostudy/database"
-	"github.com/fabianoflorentino/gotostudy/internal/http_config"
-	"github.com/fabianoflorentino/gotostudy/routes"
-	"github.com/gin-gonic/gin"
+	"github.com/fabianoflorentino/gotostudy/internal/app"
+	"github.com/fabianoflorentino/gotostudy/internal/server"
 )
 
 // init initializes the application by loading environment variables and initializing the database.
 // It is called before the main function.
 func init() {
 	config.LoadEnv()
-	database.InitDB()
 }
 
 // main is the entry point of the application.
 // It sets up the Gin router, configures trusted proxies, and initializes routes.
 // Finally, it starts the HTTP server.
 func main() {
-	r := gin.Default()
-
-	http_config.SetTrustedProxies(r)
-	routes.InitializeRoutes(r)
-
-	if err := r.Run(); err != nil {
-		log.Fatalf("failed to start server: %v", err)
-	}
+	container := app.New()
+	server.StartHTTPServer(container)
 }
