@@ -11,7 +11,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/fabianoflorentino/gotostudy/models"
+	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -36,7 +36,7 @@ var (
 // the database connection. It also enables the pgcrypto extension if it is not
 // already enabled. The function logs fatal errors if the connection fails or
 // if the extension cannot be enabled.
-func InitDB() {
+func InitDB() error {
 	dsn := setPostgresConnectionString()
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
@@ -53,11 +53,13 @@ func InitDB() {
 
 	DB = db
 	if err := runMigrations(db,
-		models.User{},
-		models.Task{},
+		domain.User{},
+		domain.Task{},
 	); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
+
+	return nil
 }
 
 // enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not.
