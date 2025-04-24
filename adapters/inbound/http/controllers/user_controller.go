@@ -6,13 +6,12 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/helpers"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/services"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // UserController is a struct that acts as an HTTP controller for handling
@@ -78,13 +77,13 @@ func (u *UserController) GetUsers(c *gin.Context) {
 // it responds with a 400 Bad Request error. If the user is not found, it responds
 // with a 404 Not Found error. On success, it returns the user data with a 200 OK status.
 func (u *UserController) GetUserByID(c *gin.Context) {
-	uid, err := u.parseUUID(c.Param("id"))
+	uid, err := helpers.ParseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, u.userExists(uid, c))
+	c.JSON(http.StatusOK, helpers.UserExists(uid, c))
 }
 
 // UpdateUser handles the HTTP request to update an existing user's information.
@@ -94,13 +93,13 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 // an appropriate HTTP error status and message. On success, it returns the updated
 // user information with an HTTP 200 status.
 func (u *UserController) UpdateUser(c *gin.Context) {
-	uid, err := u.parseUUID(c.Param("id"))
+	uid, err := helpers.ParseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if u.userExists(uid, c) == nil {
+	if helpers.UserExists(uid, c) == nil {
 		return
 	}
 
@@ -138,23 +137,23 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 //   - HTTP 500: If an internal server error occurs during the update process.
 //   - HTTP 200: If the user fields are successfully updated, returning the updated user object.
 func (u *UserController) UpdateUserFields(c *gin.Context) {
-	uid, err := u.parseUUID(c.Param("id"))
+	uid, err := helpers.ParseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if u.userExists(uid, c) == nil {
+	if helpers.UserExists(uid, c) == nil {
 		return
 	}
 
-	updates, err := u.parseUpdateFields(c)
+	updates, err := helpers.ParseUpdateFields(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if !u.hasValidUpdates(updates, c) {
+	if !helpers.HasValidUpdates(updates, c) {
 		return
 	}
 
@@ -173,7 +172,7 @@ func (u *UserController) UpdateUserFields(c *gin.Context) {
 // If the user is not found, it responds with a 404 Not Found status. On successful deletion,
 // it responds with a 204 No Content status.
 func (u *UserController) DeleteUser(c *gin.Context) {
-	uid, err := u.parseUUID(c.Param("id"))
+	uid, err := helpers.ParseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -185,76 +184,4 @@ func (u *UserController) DeleteUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusNoContent, nil)
-}
-
-// parseUUID takes a string representation of a UUID and attempts to parse it into a uuid.UUID object.
-// If the provided string is not a valid UUID, it returns an error indicating the issue.
-// On success, it returns the parsed uuid.UUID and a nil error.
-func (u *UserController) parseUUID(id string) (uuid.UUID, error) {
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return uuid.Nil, fmt.Errorf("invalid UUID: %s", err)
-	}
-
-	return uid, nil
-}
-
-// parseUpdateFields parses and validates the JSON payload from the HTTP request context
-// to extract fields for updating a user. It ensures that only valid fields are included
-// in the update map. If the JSON payload contains invalid fields or cannot be bound,
-// an error is returned.
-//
-// Parameters:
-// - c: The Gin HTTP request context containing the JSON payload.
-//
-// Returns:
-// - A map of valid fields to be updated and their corresponding values.
-// - An error if the JSON payload is invalid or contains unsupported fields.
-func (u *UserController) parseUpdateFields(c *gin.Context) (map[string]interface{}, error) {
-	var updates map[string]interface{}
-
-	if err := c.ShouldBindJSON(&updates); err != nil {
-		return nil, err
-	}
-
-	validFields := map[string]bool{
-		"username": true,
-		"email":    true,
-	}
-
-	for field := range updates {
-		if !validFields[field] {
-			return nil, fmt.Errorf("invalid field: %s", field)
-		}
-	}
-
-	return updates, nil
-}
-
-// hasValidUpdates checks if the provided updates map contains any valid fields to update.
-// If the map is empty, it responds with a 400 Bad Request status and an error message
-// indicating that there are no valid fields to update. Returns true if the updates map
-// is not empty, otherwise returns false.
-func (u *UserController) hasValidUpdates(updates map[string]interface{}, c *gin.Context) bool {
-	if len(updates) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No valid fields to update"})
-		return false
-	}
-
-	return true
-}
-
-// userExists checks if a user with the given UUID exists in the system.
-// It retrieves the user by calling the service layer's GetUserByID method.
-// If the user is not found or an error occurs during retrieval, it responds
-// with an HTTP 404 status and a JSON error message. If the user exists,
-// it returns the user object; otherwise, it returns nil.
-func (u *UserController) userExists(uid uuid.UUID, c *gin.Context) *domain.User {
-	user, err := u.service.GetUserByID(uid)
-	if err != nil || user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return nil
-	}
-
-	return user
 }
