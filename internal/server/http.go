@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"os"
 
 	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/controllers"
 	"github.com/fabianoflorentino/gotostudy/internal/app"
@@ -19,7 +20,9 @@ func StartHTTPServer(container *app.AppContainer) {
 	registerUserRoutes(r, container)
 	registerHealthRoutes(r)
 
-	log.Fatal(r.Run(":8080"))
+	if err := r.Run(":" + os.Getenv("PORT")); err != nil {
+		log.Printf("Failed to start HTTP server: %v", err)
+	}
 }
 
 // RegisterUserRoutes sets up the user-related routes for the Gin HTTP server.
@@ -51,6 +54,6 @@ func setTrustedProxies(r *gin.Engine) {
 	trustedProxies := []string{"127.0.0.1", "::1", "192.168.0.0/16", "172.16.0.0/8"}
 
 	if err := r.SetTrustedProxies(trustedProxies); err != nil {
-		log.Fatalf("Failed to set trusted proxies: %v", err)
+		log.Printf("Failed to set trusted proxies: %v", err)
 	}
 }
