@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 
+	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/controllers"
 	"github.com/fabianoflorentino/gotostudy/internal/app"
 	"github.com/gin-gonic/gin"
 )
@@ -14,10 +15,34 @@ func StartHTTPServer(container *app.AppContainer) {
 	r := gin.Default()
 
 	setTrustedProxies(r)
-	container.Controller.RegisterRoutes(r)
 
-	log.Println("Starting HTTP server on port 8080")
+	registerUserRoutes(r, container)
+	registerHealthRoutes(r)
+
 	log.Fatal(r.Run(":8080"))
+}
+
+// RegisterUserRoutes sets up the user-related routes for the Gin HTTP server.
+// It registers the routes for creating a user, getting all users, and getting a user by ID.
+func registerUserRoutes(r *gin.Engine, container *app.AppContainer) {
+	userController := controllers.NewUserController(container.UserService)
+
+	r.POST("/users", userController.CreateUser)
+	r.GET("/users", userController.GetUsers)
+	r.GET("/users/:id", userController.GetUserByID)
+	r.PUT("/users/:id", userController.UpdateUser)
+	r.PATCH("/users/:id", userController.UpdateUserFields)
+	r.DELETE("/users/:id", userController.DeleteUser)
+}
+
+// RegisterHealthRoutes sets up the health check route for the Gin HTTP server.
+// It registers a route to check the health of the application.
+func registerHealthRoutes(r *gin.Engine) {
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"status": "ok",
+		})
+	})
 }
 
 // SetTrustedProxies configures the trusted proxies for the Gin HTTP server.
