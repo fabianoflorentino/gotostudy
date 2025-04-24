@@ -10,10 +10,14 @@ Go to Study!
 │   ├── inbound
 │   │   └── http
 │   │       └── controllers
+│   │           ├── health_controller.go
 │   │           └── user_controller.go
 │   └── outbound
 │       └── persistence
-│           └── user_repository.go
+│           └── postgres
+│               ├── task_model.go
+│               ├── user_model.go
+│               └── user_repository.go
 ├── build
 │   ├── air.toml
 │   ├── Dockerfile.dev
@@ -31,8 +35,7 @@ Go to Study!
 │   │   ├── task.go
 │   │   └── user.go
 │   ├── ports
-│   │   ├── user_repository.go
-│   │   └── user_service.go
+│   │   └── user_repository.go
 │   └── services
 │       └── user_service.go
 ├── database
@@ -53,4 +56,7 @@ Go to Study!
 │   └── health_services.go
 ├── tmp
 │   └── build-errors.log
+└── tree.log
+
+24 directories, 28 files
 ```
