@@ -72,9 +72,8 @@ func (s *UserService) UpdateUserFields(id uuid.UUID, fields map[string]any) (*do
 }
 
 func (s *UserService) DeleteUser(id uuid.UUID) error {
-	err := s.repo.Delete(id)
-	if err != nil {
-		log.Fatalf("Error deleting user: %v", err)
+	if err := s.repo.Delete(id); err != nil {
+		log.Printf("Error deleting user: %v", err)
 		return err
 	}
 
