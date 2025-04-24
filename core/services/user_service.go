@@ -1,66 +1,80 @@
 package services
 
 import (
+	"log"
+
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/ports"
 	"github.com/google/uuid"
 )
 
-type UserServiceImplementation struct {
-	user ports.UserRepository
+type UserService struct {
+	repo ports.UserRepository
 }
 
-func New(user ports.UserRepository) ports.UserService {
-	return &UserServiceImplementation{user: user}
+func NewUserService(r ports.UserRepository) *UserService {
+	return &UserService{repo: r}
 }
 
-func (u *UserServiceImplementation) GetAllUsers() ([]*domain.User, error) {
-	users, err := u.user.FindAll()
-	if err != nil {
-		return nil, err
+func (s *UserService) RegisterUser(name, email string) (*domain.User, error) {
+	user := &domain.User{
+		ID:       uuid.New(),
+		Username: name,
+		Email:    email,
+		Tasks:    []domain.Task{},
 	}
 
-	return users, nil
-}
-
-func (u *UserServiceImplementation) GetUserByID(id uuid.UUID) (*domain.User, error) {
-	user, err := u.user.FindByID(id)
-	if err != nil {
+	if err := s.repo.Save(user); err != nil {
+		log.Fatalf("Error saving user: %v", err)
 		return nil, err
 	}
 
 	return user, nil
 }
 
-func (u *UserServiceImplementation) CreateUser(user *domain.User) (*domain.User, error) {
-	createdUser, err := u.user.Save(user)
+func (s *UserService) GetAllUsers() ([]*domain.User, error) {
+	users, err := s.repo.FindAll()
 	if err != nil {
+		log.Fatalf("Error fetching users: %v", err)
 		return nil, err
 	}
 
-	return createdUser, nil
+	return users, nil
 }
 
-func (u *UserServiceImplementation) UpdateUser(id uuid.UUID, user *domain.User) (*domain.User, error) {
-	updatedUser, err := u.user.Update(id, user)
+func (s *UserService) GetUserByID(id uuid.UUID) (*domain.User, error) {
+	user, err := s.repo.FindByID(id)
 	if err != nil {
+		log.Fatalf("Error fetching user by ID: %v", err)
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *UserService) UpdateUser(id uuid.UUID, user *domain.User) error {
+	if err := s.repo.Update(id, user); err != nil {
+		log.Fatalf("Error updating user: %v", err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *UserService) UpdateUserFields(id uuid.UUID, fields map[string]any) (*domain.User, error) {
+	updatedUser, err := s.repo.UpdateFields(id, fields)
+	if err != nil {
+		log.Fatalf("Error updating user fields: %v", err)
 		return nil, err
 	}
 
 	return updatedUser, nil
 }
-func (u *UserServiceImplementation) UpdateUserFields(id uuid.UUID, fields map[string]any) (*domain.User, error) {
-	updatedUser, err := u.user.UpdateFields(id, fields)
-	if err != nil {
-		return nil, err
-	}
 
-	return updatedUser, nil
-}
-
-func (u *UserServiceImplementation) DeleteUser(id uuid.UUID) error {
-	err := u.user.Delete(id)
+func (s *UserService) DeleteUser(id uuid.UUID) error {
+	err := s.repo.Delete(id)
 	if err != nil {
+		log.Fatalf("Error deleting user: %v", err)
 		return err
 	}
 
