@@ -11,6 +11,11 @@ type PostgresUserRepository struct {
 	DB *gorm.DB
 }
 
+var (
+	models []User
+	model  User
+)
+
 func NewPostgresUserRepository(db *gorm.DB) ports.UserRepository {
 	return &PostgresUserRepository{DB: db}
 }
@@ -38,7 +43,6 @@ func (r *PostgresUserRepository) Save(user *domain.User) error {
 }
 
 func (r *PostgresUserRepository) FindAll() ([]*domain.User, error) {
-	var models []User
 	if err := r.DB.Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -57,7 +61,6 @@ func (r *PostgresUserRepository) FindAll() ([]*domain.User, error) {
 }
 
 func (r *PostgresUserRepository) FindByID(id uuid.UUID) (*domain.User, error) {
-	var model User
 	tasks := make([]domain.Task, len(model.Tasks))
 
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
@@ -85,7 +88,6 @@ func (r *PostgresUserRepository) FindByID(id uuid.UUID) (*domain.User, error) {
 }
 
 func (r *PostgresUserRepository) Update(id uuid.UUID, user *domain.User) error {
-	var model User
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
 		return err
 	}
@@ -97,7 +99,6 @@ func (r *PostgresUserRepository) Update(id uuid.UUID, user *domain.User) error {
 }
 
 func (r *PostgresUserRepository) UpdateFields(id uuid.UUID, fields map[string]any) (*domain.User, error) {
-	var model User
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
@@ -124,8 +125,6 @@ func (r *PostgresUserRepository) UpdateFields(id uuid.UUID, fields map[string]an
 }
 
 func (r *PostgresUserRepository) Delete(id uuid.UUID) error {
-	var model User
-
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
 		return err
 	}
