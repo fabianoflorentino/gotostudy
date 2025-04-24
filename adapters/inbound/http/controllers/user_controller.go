@@ -49,7 +49,11 @@ func (u *UserController) GetUsers(c *gin.Context) {
 }
 
 func (u *UserController) GetUserByID(c *gin.Context) {
-	uid := parseUUID(c.Param("id"))
+	uid, err := parseUUID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	user, err := u.service.GetUserByID(uid)
 	if err != nil {
@@ -61,7 +65,11 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 }
 
 func (u *UserController) UpdateUser(c *gin.Context) {
-	var uid = parseUUID(c.Param("id"))
+	uid, err := parseUUID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	var input struct {
 		Username string `json:"username" binding:"required"`
@@ -82,7 +90,11 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 }
 
 func (u *UserController) UpdateUserFields(c *gin.Context) {
-	uid := parseUUID(c.Param("id"))
+	uid, err := parseUUID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	updates, err := u.parseUpdateFields(c)
 	if err != nil {
@@ -104,27 +116,30 @@ func (u *UserController) UpdateUserFields(c *gin.Context) {
 }
 
 func (u *UserController) DeleteUser(c *gin.Context) {
-	uid := parseUUID(c.Param("id"))
-
-	err := u.service.DeleteUser(uid)
+	uid, err := parseUUID(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := u.service.DeleteUser(uid); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
 	c.JSON(http.StatusNoContent, nil)
 }
 
-func parseUUID(params string) uuid.UUID {
-	id, err := uuid.Parse(params)
+// private methods
+
+func parseUUID(id string) (uuid.UUID, error) {
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		return uuid.Nil
+		return uuid.Nil, fmt.Errorf("invalid UUID: %s", err)
 	}
 
-	return id
+	return uid, nil
 }
-
-// private methods
 
 func (u *UserController) parseUpdateFields(c *gin.Context) (map[string]interface{}, error) {
 	var updates map[string]interface{}
