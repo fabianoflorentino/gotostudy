@@ -84,13 +84,7 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	user, err := u.service.GetUserByID(uid)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, user)
+	c.JSON(http.StatusOK, u.userExists(uid, c))
 }
 
 // UpdateUser handles the HTTP request to update an existing user's information.
@@ -143,6 +137,10 @@ func (u *UserController) UpdateUserFields(c *gin.Context) {
 	uid, err := u.parseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if u.userExists(uid, c) == nil {
 		return
 	}
 
@@ -240,4 +238,19 @@ func (u *UserController) hasValidUpdates(updates map[string]interface{}, c *gin.
 	}
 
 	return true
+}
+
+// userExists checks if a user with the given UUID exists in the system.
+// It retrieves the user by calling the service layer's GetUserByID method.
+// If the user is not found or an error occurs during retrieval, it responds
+// with an HTTP 404 status and a JSON error message. If the user exists,
+// it returns the user object; otherwise, it returns nil.
+func (u *UserController) userExists(uid uuid.UUID, c *gin.Context) *domain.User {
+	user, err := u.service.GetUserByID(uid)
+	if err != nil || user == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return nil
+	}
+
+	return user
 }
