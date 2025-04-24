@@ -8,7 +8,9 @@ package controllers
 import (
 	"net/http"
 
+	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/handlers"
 	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/helpers"
+	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/requests"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/services"
 	"github.com/gin-gonic/gin"
@@ -37,15 +39,9 @@ func NewUserController(s *services.UserService) *UserController {
 // If the user creation process encounters an error, it responds with a 500 Internal Server Error status and an error message.
 // On successful user creation, it responds with a 201 Created status and the created user object in the response body.
 func (u *UserController) CreateUser(c *gin.Context) {
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
-	}
+	var input requests.RegisterUserRequest
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	handlers.ShouldBindJSON(c, &input)
 
 	user, err := u.service.RegisterUser(input.Username, input.Email)
 	if err != nil {
@@ -83,7 +79,7 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, helpers.UserExists(uid, c))
+	c.JSON(http.StatusOK, helpers.UserExists(u.service, uid, c))
 }
 
 // UpdateUser handles the HTTP request to update an existing user's information.
@@ -99,14 +95,12 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if helpers.UserExists(uid, c) == nil {
+	if helpers.UserExists(u.service, uid, c) == nil {
 		return
 	}
 
-	var input struct {
-		Username string `json:"username" binding:"required"`
-		Email    string `json:"email" binding:"required,email"`
-	}
+	var input requests.RegisterUserRequest
+	handlers.ShouldBindJSON(c, &input)
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -143,20 +137,7 @@ func (u *UserController) UpdateUserFields(c *gin.Context) {
 		return
 	}
 
-	if helpers.UserExists(uid, c) == nil {
-		return
-	}
-
-	updates, err := helpers.ParseUpdateFields(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if !helpers.HasValidUpdates(updates, c) {
-		return
-	}
-
+	var updates = handlers.HasValidUpdateUserFields(u.service, c, uid)
 	user, err := u.service.UpdateUserFields(uid, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
