@@ -9,9 +9,15 @@ Go to Study!
 ├── adapters
 │   ├── inbound
 │   │   └── http
-│   │       └── controllers
-│   │           ├── health_controller.go
-│   │           └── user_controller.go
+│   │       ├── controllers
+│   │       │   ├── health_controller.go
+│   │       │   └── user_controller.go
+│   │       ├── handlers
+│   │       │   └── user_handler.go
+│   │       ├── helpers
+│   │       │   └── user_helpers.go
+│   │       └── requests
+│   │           └── register_user_request.go
 │   └── outbound
 │       └── persistence
 │           └── postgres
@@ -28,8 +34,6 @@ Go to Study!
 ├── config
 │   ├── _env
 │   └── config.go
-├── controllers
-│   └── health_controller.go
 ├── core
 │   ├── domain
 │   │   ├── task.go
@@ -58,5 +62,5 @@ Go to Study!
 │   └── build-errors.log
 └── tree.log
 
-24 directories, 28 files
+26 directories, 30 files
 ```
