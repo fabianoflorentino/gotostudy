@@ -25,7 +25,7 @@ func (s *UserService) RegisterUser(name, email string) (*domain.User, error) {
 	}
 
 	if err := s.repo.Save(user); err != nil {
-		log.Fatalf("Error saving user: %v", err)
+		log.Printf("Error saving user: %v", err)
 		return nil, err
 	}
 
@@ -35,7 +35,7 @@ func (s *UserService) RegisterUser(name, email string) (*domain.User, error) {
 func (s *UserService) GetAllUsers() ([]*domain.User, error) {
 	users, err := s.repo.FindAll()
 	if err != nil {
-		log.Fatalf("Error fetching users: %v", err)
+		log.Printf("Error fetching users: %v", err)
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ func (s *UserService) GetAllUsers() ([]*domain.User, error) {
 func (s *UserService) GetUserByID(id uuid.UUID) (*domain.User, error) {
 	user, err := s.repo.FindByID(id)
 	if err != nil {
-		log.Fatalf("Error fetching user by ID: %v", err)
+		log.Printf("Error fetching user by ID: %v", err)
 		return nil, err
 	}
 
@@ -54,7 +54,7 @@ func (s *UserService) GetUserByID(id uuid.UUID) (*domain.User, error) {
 
 func (s *UserService) UpdateUser(id uuid.UUID, user *domain.User) error {
 	if err := s.repo.Update(id, user); err != nil {
-		log.Fatalf("Error updating user: %v", err)
+		log.Printf("Error updating user: %v", err)
 		return err
 	}
 
@@ -64,7 +64,7 @@ func (s *UserService) UpdateUser(id uuid.UUID, user *domain.User) error {
 func (s *UserService) UpdateUserFields(id uuid.UUID, fields map[string]any) (*domain.User, error) {
 	updatedUser, err := s.repo.UpdateFields(id, fields)
 	if err != nil {
-		log.Fatalf("Error updating user fields: %v", err)
+		log.Printf("Error updating user fields: %v", err)
 		return nil, err
 	}
 
