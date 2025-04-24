@@ -100,6 +100,10 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
+	if u.userExists(uid, c) == nil {
+		return
+	}
+
 	var input struct {
 		Username string `json:"username" binding:"required"`
 		Email    string `json:"email" binding:"required,email"`
