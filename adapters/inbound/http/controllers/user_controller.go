@@ -1,128 +1,157 @@
 package controllers
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/fabianoflorentino/gotostudy/core/domain"
-	"github.com/fabianoflorentino/gotostudy/core/ports"
+	"github.com/fabianoflorentino/gotostudy/core/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UserController struct {
-	Service ports.UserService
+	service *services.UserService
 }
 
-func New(service ports.UserService) *UserController {
-	return &UserController{Service: service}
+func NewUserController(s *services.UserService) *UserController {
+	return &UserController{service: s}
 }
 
-func (h *UserController) RegisterRoutes(r *gin.Engine) {
-	r.GET("/users", h.getUsers)
-	r.GET("/users/:id", h.getUserByID)
-	r.POST("/users", h.createUser)
-	r.PUT("/users/:id", h.updateUser)
-	r.PATCH("/users/:id", h.updateUserFields)
-	r.DELETE("/users/:id", h.deleteUser)
+func (u *UserController) CreateUser(c *gin.Context) {
+	var input struct {
+		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := u.service.RegisterUser(input.Username, input.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, user)
 }
 
-func (h *UserController) getUsers(c *gin.Context) {
-	users, err := h.Service.GetAllUsers()
+func (u *UserController) GetUsers(c *gin.Context) {
+	users, err := u.service.GetAllUsers()
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(200, users)
+
+	c.JSON(http.StatusOK, users)
 }
 
-func (h *UserController) getUserByID(c *gin.Context) {
-	userID, err := uuid.Parse(c.Param("id"))
+func (u *UserController) GetUserByID(c *gin.Context) {
+	uid := parseUUID(c.Param("id"))
+
+	user, err := u.service.GetUserByID(uid)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid user ID"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	user, err := h.Service.GetUserByID(userID)
-	if err != nil {
-		c.JSON(404, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(200, user)
+	c.JSON(http.StatusOK, user)
 }
 
-func (h *UserController) createUser(c *gin.Context) {
-	var user domain.User
+func (u *UserController) UpdateUser(c *gin.Context) {
+	var uid = parseUUID(c.Param("id"))
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+	var input struct {
+		Username string `json:"username" binding:"required"`
+		Email    string `json:"email" binding:"required,email"`
+	}
+
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	createdUser, err := h.Service.CreateUser(&user)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
+	user := u.service.UpdateUser(uid, &domain.User{
+		Username: input.Username,
+		Email:    input.Email,
+	})
 
-	c.JSON(201, createdUser)
+	c.JSON(http.StatusOK, user)
 }
 
-func (h *UserController) updateUser(c *gin.Context) {
-	var user domain.User
+func (u *UserController) UpdateUserFields(c *gin.Context) {
+	uid := parseUUID(c.Param("id"))
 
-	userID, err := uuid.Parse(c.Param("id"))
+	updates, err := u.parseUpdateFields(c)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid user ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+	if !u.hasValidUpdates(updates, c) {
 		return
 	}
 
-	updatedUser, err := h.Service.UpdateUser(userID, &user)
+	user, err := u.service.UpdateUserFields(uid, updates)
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, updatedUser)
+	c.JSON(http.StatusOK, user)
 }
 
-func (h *UserController) updateUserFields(c *gin.Context) {
-	userID, err := uuid.Parse(c.Param("id"))
+func (u *UserController) DeleteUser(c *gin.Context) {
+	uid := parseUUID(c.Param("id"))
+
+	err := u.service.DeleteUser(uid)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid user ID"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	var fields map[string]any
-	if err := c.ShouldBindJSON(&fields); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
-		return
-	}
-
-	updatedUser, err := h.Service.UpdateUserFields(userID, fields)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(200, updatedUser)
+	c.JSON(http.StatusNoContent, nil)
 }
 
-func (h *UserController) deleteUser(c *gin.Context) {
-	userID, err := uuid.Parse(c.Param("id"))
+func parseUUID(params string) uuid.UUID {
+	id, err := uuid.Parse(params)
 	if err != nil {
-		c.JSON(400, gin.H{"error": "invalid user ID"})
-		return
+		return uuid.Nil
 	}
 
-	err = h.Service.DeleteUser(userID)
-	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
+	return id
+}
+
+// private methods
+
+func (u *UserController) parseUpdateFields(c *gin.Context) (map[string]interface{}, error) {
+	var updates map[string]interface{}
+	if err := c.ShouldBindJSON(&updates); err != nil {
+		return nil, err
 	}
 
-	c.JSON(204, nil)
+	// Validate the fields
+	validFields := map[string]bool{
+		"username": true,
+		"email":    true,
+	}
+
+	for field := range updates {
+		if !validFields[field] {
+			return nil, fmt.Errorf("invalid field: %s", field)
+		}
+	}
+
+	return updates, nil
+}
+
+func (u *UserController) hasValidUpdates(updates map[string]interface{}, c *gin.Context) bool {
+	if len(updates) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No valid fields to update"})
+		return false
+	}
+
+	return true
 }
