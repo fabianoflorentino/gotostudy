@@ -33,8 +33,8 @@ func ParseUUID(id string) (uuid.UUID, error) {
 // Returns:
 // - A map of valid fields to be updated and their corresponding values.
 // - An error if the JSON payload is invalid or contains unsupported fields.
-func ParseUpdateFields(c *gin.Context) (map[string]interface{}, error) {
-	var updates map[string]interface{}
+func ParseUpdateFields(c *gin.Context) (map[string]any, error) {
+	var updates map[string]any
 
 	if err := c.ShouldBindJSON(&updates); err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func ParseUpdateFields(c *gin.Context) (map[string]interface{}, error) {
 // If the map is empty, it responds with a 400 Bad Request status and an error message
 // indicating that there are no valid fields to update. Returns true if the updates map
 // is not empty, otherwise returns false.
-func HasValidUpdates(updates map[string]interface{}, c *gin.Context) bool {
+func HasValidUpdates(updates map[string]any, c *gin.Context) bool {
 	if len(updates) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No valid fields to update"})
 		return false
