@@ -1,3 +1,9 @@
+// Package helpers provides utility functions to assist with common operations
+// related to HTTP request handling and user management in the application.
+// These helper functions include parsing UUIDs, validating and extracting
+// update fields from JSON payloads, and checking the existence of users.
+// The package is designed to streamline and centralize reusable logic for
+// better maintainability and consistency across the codebase.
 package helpers
 
 import (
