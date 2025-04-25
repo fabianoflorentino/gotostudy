@@ -79,7 +79,9 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, helpers.UserExists(u.service, uid, c))
+	if usr := helpers.UserExists(u.service, uid, c); usr != nil {
+		c.JSON(http.StatusOK, usr)
+	}
 }
 
 // UpdateUser handles the HTTP request to update an existing user's information.
