@@ -20,6 +20,6 @@ func init() {
 // It sets up the Gin router, configures trusted proxies, and initializes routes.
 // Finally, it starts the HTTP server.
 func main() {
-	container := app.New()
+	container := app.NewAppContainer()
 	server.StartHTTPServer(container)
 }

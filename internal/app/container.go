@@ -15,7 +15,7 @@ type AppContainer struct {
 	UserService *services.UserService
 }
 
-func New() *AppContainer {
+func NewAppContainer() *AppContainer {
 	if err := database.InitDB(); err != nil {
 		log.Printf("failed to initialize database: %v", err)
 	}
