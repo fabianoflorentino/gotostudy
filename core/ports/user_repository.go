@@ -8,6 +8,10 @@ import (
 	"github.com/google/uuid"
 )
 
+// UserRepository defines the contract for a repository that manages user entities.
+// It provides methods for performing CRUD (Create, Read, Update, Delete) operations
+// on user data, as well as updating specific fields of a user. The interface abstracts
+// the underlying data storage mechanism, allowing for flexibility and easier testing.
 type UserRepository interface {
 	FindAll() ([]*domain.User, error)
 	FindByID(id uuid.UUID) (*domain.User, error)
