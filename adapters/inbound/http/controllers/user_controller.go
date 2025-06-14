@@ -41,7 +41,10 @@ func NewUserController(s *services.UserService) *UserController {
 func (u *UserController) CreateUser(c *gin.Context) {
 	var input requests.RegisterUserRequest
 
-	handlers.ShouldBindJSON(c, &input)
+	if err := handlers.ShouldBindJSON(c, &input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request, username and email are required"})
+		return
+	}
 
 	user, err := u.service.RegisterUser(input.Username, input.Email)
 	if err != nil {
