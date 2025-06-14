@@ -46,7 +46,7 @@ func (u *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := u.service.RegisterUser(user)
+	user, err := u.service.RegisterUser(c, user)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
@@ -61,7 +61,7 @@ func (u *UserController) CreateUser(c *gin.Context) {
 // an HTTP 500 status code and an error message. Otherwise, it responds
 // with an HTTP 200 status code and the list of users in JSON format.
 func (u *UserController) GetUsers(c *gin.Context) {
-	users, err := u.service.GetAllUsers()
+	users, err := u.service.GetAllUsers(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -112,7 +112,7 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user := u.service.UpdateUser(uid, &domain.User{
+	user := u.service.UpdateUser(c, uid, &domain.User{
 		Username: input.Username,
 		Email:    input.Email,
 	})
@@ -143,7 +143,7 @@ func (u *UserController) UpdateUserFields(c *gin.Context) {
 	}
 
 	var updates = handlers.HasValidUpdateUserFields(u.service, c, uid)
-	user, err := u.service.UpdateUserFields(uid, updates)
+	user, err := u.service.UpdateUserFields(c, uid, updates)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -164,7 +164,7 @@ func (u *UserController) DeleteUser(c *gin.Context) {
 		return
 	}
 
-	if err := u.service.DeleteUser(uid); err != nil {
+	if err := u.service.DeleteUser(c, uid); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
