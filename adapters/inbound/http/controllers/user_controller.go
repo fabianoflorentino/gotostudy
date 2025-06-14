@@ -39,16 +39,16 @@ func NewUserController(s *services.UserService) *UserController {
 // If the user creation process encounters an error, it responds with a 500 Internal Server Error status and an error message.
 // On successful user creation, it responds with a 201 Created status and the created user object in the response body.
 func (u *UserController) CreateUser(c *gin.Context) {
-	var input requests.RegisterUserRequest
+	var user = &domain.User{}
 
-	if err := handlers.ShouldBindJSON(c, &input); err != nil {
+	if err := handlers.ShouldBindJSON(c, &user); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request, username and email are required"})
 		return
 	}
 
-	user, err := u.service.RegisterUser(input.Username, input.Email)
+	user, err := u.service.RegisterUser(user)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
