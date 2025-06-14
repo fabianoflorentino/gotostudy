@@ -117,6 +117,21 @@ func (r *PostgresUserRepository) FindByID(id uuid.UUID) (*domain.User, error) {
 	}, nil
 }
 
+func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error) {
+	var model User
+
+	if err := r.DB.Where("email = ?", email).First(&model).Error; err != nil {
+		return nil, err
+	}
+
+	return &domain.User{
+		ID:       model.ID,
+		Username: model.Username,
+		Email:    model.Email,
+		Tasks:    nil,
+	}, nil
+}
+
 // Update updates an existing user record in the database with the provided user details.
 // It retrieves the user by the given UUID, updates the fields (Username and Email),
 // and saves the changes back to the database. If any error occurs during the process,

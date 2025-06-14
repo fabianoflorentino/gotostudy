@@ -15,6 +15,7 @@ import (
 type UserRepository interface {
 	FindAll() ([]*domain.User, error)
 	FindByID(id uuid.UUID) (*domain.User, error)
+	FindByEmail(email string) (*domain.User, error)
 	Save(user *domain.User) error
 	Update(id uuid.UUID, user *domain.User) error
 	UpdateFields(id uuid.UUID, fields map[string]any) (*domain.User, error)
