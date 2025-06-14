@@ -79,7 +79,7 @@ func HasValidUpdates(updates map[string]any, c *gin.Context) bool {
 // with an HTTP 404 status and a JSON error message. If the user exists,
 // it returns the user object; otherwise, it returns nil.
 func UserExists(service *services.UserService, uid uuid.UUID, c *gin.Context) *domain.User {
-	user, err := service.GetUserByID(uid)
+	user, err := service.GetUserByID(c, uid)
 	if err != nil || user == nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return nil
