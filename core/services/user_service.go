@@ -16,14 +16,10 @@ import (
 	"errors"
 	"log"
 
+	"github.com/fabianoflorentino/gotostudy/core"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/ports"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
 // UserService is a service layer struct that provides methods to manage user-related operations.
@@ -45,7 +41,7 @@ func NewUserService(r ports.UserRepository) *UserService {
 func (s *UserService) RegisterUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	existingUser, err := s.repo.FindByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
-		return nil, ErrUserAlreadyExists
+		return nil, core.ErrUserAlreadyExists
 	}
 
 	user.ID = uuid.New()
@@ -83,7 +79,7 @@ func (s *UserService) GetAllUsers(ctx context.Context) ([]*domain.User, error) {
 //   - error: An error object if there is an issue during retrieval.
 func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	user, err := s.repo.FindByID(ctx, id)
-	if errors.Is(err, ErrUserNotFound) {
+	if errors.Is(err, core.ErrUserNotFound) {
 		return nil, err
 	}
 
