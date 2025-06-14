@@ -5,6 +5,7 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/fabianoflorentino/gotostudy/core/domain"
@@ -42,7 +43,7 @@ func NewPostgresUserRepository(db *gorm.DB) ports.UserRepository {
 // and saves it using the GORM ORM. The method also processes the
 // associated tasks of the user, preparing them for persistence.
 // Returns an error if the operation fails.
-func (r *PostgresUserRepository) Save(user *domain.User) error {
+func (r *PostgresUserRepository) Save(ctx context.Context, user *domain.User) error {
 	tasks := make([]*domain.Task, len(user.Tasks))
 	for i, task := range user.Tasks {
 		tasks[i] = &domain.Task{
@@ -69,7 +70,7 @@ func (r *PostgresUserRepository) Save(user *domain.User) error {
 // underlying GORM instance (r.DB) and maps the retrieved data to the domain
 // layer. If an error occurs during the database query, it returns the error.
 // Otherwise, it returns a slice of pointers to domain.User objects.
-func (r *PostgresUserRepository) FindAll() ([]*domain.User, error) {
+func (r *PostgresUserRepository) FindAll(ctx context.Context) ([]*domain.User, error) {
 	if err := r.DB.Find(&models).Error; err != nil {
 		return nil, err
 	}
@@ -90,7 +91,7 @@ func (r *PostgresUserRepository) FindAll() ([]*domain.User, error) {
 // FindByID retrieves a user from the PostgreSQL database by their unique identifier (UUID).
 // It returns a pointer to the User domain object if found, or an error if the user does not exist
 // or if there is an issue with the database query.
-func (r *PostgresUserRepository) FindByID(id uuid.UUID) (*domain.User, error) {
+func (r *PostgresUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	tasks := make([]domain.Task, len(model.Tasks))
 
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
@@ -117,7 +118,7 @@ func (r *PostgresUserRepository) FindByID(id uuid.UUID) (*domain.User, error) {
 	}, nil
 }
 
-func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error) {
+func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
 	var model User
 
 	if err := r.DB.Where("email = ?", email).First(&model).Error; err != nil {
@@ -136,7 +137,7 @@ func (r *PostgresUserRepository) FindByEmail(email string) (*domain.User, error)
 // It retrieves the user by the given UUID, updates the fields (Username and Email),
 // and saves the changes back to the database. If any error occurs during the process,
 // it returns the error.
-func (r *PostgresUserRepository) Update(id uuid.UUID, user *domain.User) error {
+func (r *PostgresUserRepository) Update(ctx context.Context, id uuid.UUID, user *domain.User) error {
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
 		return err
 	}
@@ -152,7 +153,7 @@ func (r *PostgresUserRepository) Update(id uuid.UUID, user *domain.User) error {
 // If the "username" or "email" fields are present in the map, they are updated accordingly.
 // The method retrieves the user record, updates the specified fields, and saves the changes back to the database.
 // Returns the updated user as a domain.User object or an error if the operation fails.
-func (r *PostgresUserRepository) UpdateFields(id uuid.UUID, fields map[string]any) (*domain.User, error) {
+func (r *PostgresUserRepository) UpdateFields(ctx context.Context, id uuid.UUID, fields map[string]any) (*domain.User, error) {
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
@@ -175,7 +176,7 @@ func (r *PostgresUserRepository) UpdateFields(id uuid.UUID, fields map[string]an
 // It first attempts to retrieve the user record with the given ID to ensure it exists.
 // If the record is found, it deletes the record from the database.
 // Returns an error if the record is not found or if any database operation fails.
-func (r *PostgresUserRepository) Delete(id uuid.UUID) error {
+func (r *PostgresUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
 		return err
 	}
