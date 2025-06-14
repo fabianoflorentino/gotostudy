@@ -12,12 +12,18 @@
 package services
 
 import (
-	"fmt"
+	"context"
+	"errors"
 	"log"
 
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/ports"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrUserNotFound      = errors.New("user not found")
+	ErrUserAlreadyExists = errors.New("user already exists")
 )
 
 // UserService is a service layer struct that provides methods to manage user-related operations.
@@ -36,16 +42,16 @@ func NewUserService(r ports.UserRepository) *UserService {
 // RegisterUser creates a new user with the provided name and email, assigns a unique ID,
 // and initializes an empty list of tasks for the user. It then saves the user to the repository.
 // If the save operation fails, it logs the error and returns it. On success, it returns the created user.
-func (s *UserService) RegisterUser(user *domain.User) (*domain.User, error) {
-	existingUser, err := s.repo.FindByEmail(user.Email)
+func (s *UserService) RegisterUser(ctx context.Context, user *domain.User) (*domain.User, error) {
+	existingUser, err := s.repo.FindByEmail(ctx, user.Email)
 	if err == nil && existingUser != nil {
-		return nil, fmt.Errorf("user with email %s already exists", user.Email)
+		return nil, ErrUserAlreadyExists
 	}
 
 	user.ID = uuid.New()
 	user.Tasks = []domain.Task{}
 
-	if err := s.repo.Save(user); err != nil {
+	if err := s.repo.Save(ctx, user); err != nil {
 		log.Printf("Error saving user: %v", err)
 		return nil, err
 	}
@@ -56,10 +62,9 @@ func (s *UserService) RegisterUser(user *domain.User) (*domain.User, error) {
 // GetAllUsers retrieves all users from the repository.
 // It returns a slice of User objects and an error if any occurs during the retrieval process.
 // If an error is encountered, it logs the error and returns nil along with the error.
-func (s *UserService) GetAllUsers() ([]*domain.User, error) {
-	users, err := s.repo.FindAll()
+func (s *UserService) GetAllUsers(ctx context.Context) ([]*domain.User, error) {
+	users, err := s.repo.FindAll(ctx)
 	if err != nil {
-		log.Printf("Error fetching users: %v", err)
 		return nil, err
 	}
 
@@ -76,10 +81,9 @@ func (s *UserService) GetAllUsers() ([]*domain.User, error) {
 // Returns:
 //   - *domain.User: A pointer to the User object if found.
 //   - error: An error object if there is an issue during retrieval.
-func (s *UserService) GetUserByID(id uuid.UUID) (*domain.User, error) {
-	user, err := s.repo.FindByID(id)
-	if err != nil {
-		log.Printf("Error fetching user by ID: %v", err)
+func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	user, err := s.repo.FindByID(ctx, id)
+	if errors.Is(err, ErrUserNotFound) {
 		return nil, err
 	}
 
@@ -90,8 +94,8 @@ func (s *UserService) GetUserByID(id uuid.UUID) (*domain.User, error) {
 // It takes a UUID representing the user's ID and a pointer to a domain.User object containing
 // the updated user information. If the update operation fails, it logs the error and returns it.
 // Otherwise, it returns nil to indicate success.
-func (s *UserService) UpdateUser(id uuid.UUID, user *domain.User) error {
-	if err := s.repo.Update(id, user); err != nil {
+func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain.User) error {
+	if err := s.repo.Update(ctx, id, user); err != nil {
 		log.Printf("Error updating user: %v", err)
 		return err
 	}
@@ -104,10 +108,10 @@ func (s *UserService) UpdateUser(id uuid.UUID, user *domain.User) error {
 // The method interacts with the repository layer to perform the update operation.
 // If the update is successful, it returns the updated user object.
 // In case of an error during the update, it logs the error and returns it.
-func (s *UserService) UpdateUserFields(id uuid.UUID, fields map[string]any) (*domain.User, error) {
-	updatedUser, err := s.repo.UpdateFields(id, fields)
+func (s *UserService) UpdateUserFields(ctx context.Context, id uuid.UUID, fields map[string]any) (*domain.User, error) {
+	updatedUser, err := s.repo.UpdateFields(ctx, id, fields)
 	if err != nil {
-		log.Printf("Error updating user fields: %v", err)
+		log.Printf("Error updating user fields: %v", fields)
 		return nil, err
 	}
 
@@ -116,8 +120,8 @@ func (s *UserService) UpdateUserFields(id uuid.UUID, fields map[string]any) (*do
 
 // DeleteUser removes a user from the repository based on the provided UUID.
 // It returns an error if the deletion process fails, logging the error for debugging purposes.
-func (s *UserService) DeleteUser(id uuid.UUID) error {
-	if err := s.repo.Delete(id); err != nil {
+func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	if err := s.repo.Delete(ctx, id); err != nil {
 		log.Printf("Error deleting user: %v", err)
 		return err
 	}
