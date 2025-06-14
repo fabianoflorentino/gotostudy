@@ -23,9 +23,9 @@ import (
 // or nil if the binding is successful.
 func ShouldBindJSON(c *gin.Context, input any) error {
 	if err := c.ShouldBindJSON(input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return err
 	}
+
 	return nil
 }
 
