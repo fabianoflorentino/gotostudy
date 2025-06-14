@@ -12,6 +12,7 @@
 package services
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/fabianoflorentino/gotostudy/core/domain"
@@ -35,13 +36,14 @@ func NewUserService(r ports.UserRepository) *UserService {
 // RegisterUser creates a new user with the provided name and email, assigns a unique ID,
 // and initializes an empty list of tasks for the user. It then saves the user to the repository.
 // If the save operation fails, it logs the error and returns it. On success, it returns the created user.
-func (s *UserService) RegisterUser(name, email string) (*domain.User, error) {
-	user := &domain.User{
-		ID:       uuid.New(),
-		Username: name,
-		Email:    email,
-		Tasks:    []domain.Task{},
+func (s *UserService) RegisterUser(user *domain.User) (*domain.User, error) {
+	existingUser, err := s.repo.FindByEmail(user.Email)
+	if err == nil && existingUser != nil {
+		return nil, fmt.Errorf("user with email %s already exists", user.Email)
 	}
+
+	user.ID = uuid.New()
+	user.Tasks = []domain.Task{}
 
 	if err := s.repo.Save(user); err != nil {
 		log.Printf("Error saving user: %v", err)
