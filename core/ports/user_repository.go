@@ -4,6 +4,8 @@
 package ports
 
 import (
+	"context"
+
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/google/uuid"
 )
@@ -13,11 +15,11 @@ import (
 // on user data, as well as updating specific fields of a user. The interface abstracts
 // the underlying data storage mechanism, allowing for flexibility and easier testing.
 type UserRepository interface {
-	FindAll() ([]*domain.User, error)
-	FindByID(id uuid.UUID) (*domain.User, error)
-	FindByEmail(email string) (*domain.User, error)
-	Save(user *domain.User) error
-	Update(id uuid.UUID, user *domain.User) error
-	UpdateFields(id uuid.UUID, fields map[string]any) (*domain.User, error)
-	Delete(id uuid.UUID) error
+	FindAll(ctx context.Context) ([]*domain.User, error)
+	FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	FindByEmail(ctx context.Context, email string) (*domain.User, error)
+	Save(ctx context.Context, user *domain.User) error
+	Update(ctx context.Context, id uuid.UUID, user *domain.User) error
+	UpdateFields(ctx context.Context, id uuid.UUID, fields map[string]any) (*domain.User, error)
+	Delete(ctx context.Context, id uuid.UUID) error
 }
