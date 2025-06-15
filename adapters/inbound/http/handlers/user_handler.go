@@ -33,10 +33,6 @@ func ShouldBindJSON(c *gin.Context, input any) error {
 // and validates them. Returns nil if the user doesn't exist, parsing fails,
 // or updates are invalid. Otherwise, returns a map of valid update fields.
 func HasValidUpdateUserFields(service *services.UserService, c *gin.Context, uid uuid.UUID) map[string]any {
-	if helpers.UserExists(service, uid, c) == nil {
-		return nil
-	}
-
 	updates, err := helpers.ParseUpdateFields(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
