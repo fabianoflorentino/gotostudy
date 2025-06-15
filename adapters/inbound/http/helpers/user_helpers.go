@@ -10,8 +10,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/fabianoflorentino/gotostudy/core/domain"
-	"github.com/fabianoflorentino/gotostudy/core/services"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -71,19 +69,4 @@ func HasValidUpdates(updates map[string]any, c *gin.Context) bool {
 	}
 
 	return true
-}
-
-// userExists checks if a user with the given UUID exists in the system.
-// It retrieves the user by calling the service layer's GetUserByID method.
-// If the user is not found or an error occurs during retrieval, it responds
-// with an HTTP 404 status and a JSON error message. If the user exists,
-// it returns the user object; otherwise, it returns nil.
-func UserExists(service *services.UserService, uid uuid.UUID, c *gin.Context) *domain.User {
-	user, err := service.GetUserByID(c, uid)
-	if err != nil || user == nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-		return nil
-	}
-
-	return user
 }
