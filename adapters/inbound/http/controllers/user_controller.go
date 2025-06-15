@@ -60,7 +60,7 @@ func (u *UserController) CreateUser(c *gin.Context) {
 // If an error occurs during the retrieval process, it responds with
 // an HTTP 500 status code and an error message. Otherwise, it responds
 // with an HTTP 200 status code and the list of users in JSON format.
-func (u *UserController) GetUsers(c *gin.Context) {
+func (u *UserController) GetAllUsers(c *gin.Context) {
 	users, err := u.service.GetAllUsers(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -82,9 +82,14 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	if usr := helpers.UserExists(u.service, uid, c); usr != nil {
-		c.JSON(http.StatusOK, usr)
+	user, err := u.service.GetUserByID(c, uid)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
 	}
+
+	// If the user is found, return it with a 200 OK status
+	c.JSON(http.StatusOK, user)
 }
 
 // UpdateUser handles the HTTP request to update an existing user's information.
@@ -94,21 +99,18 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 // an appropriate HTTP error status and message. On success, it returns the updated
 // user information with an HTTP 200 status.
 func (u *UserController) UpdateUser(c *gin.Context) {
+	var input requests.RegisterUserRequest
+
 	uid, err := helpers.ParseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if helpers.UserExists(u.service, uid, c) == nil {
-		return
-	}
-
-	var input requests.RegisterUserRequest
 	handlers.ShouldBindJSON(c, &input)
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -137,14 +139,20 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 //   - HTTP 500: If an internal server error occurs during the update process.
 //   - HTTP 200: If the user fields are successfully updated, returning the updated user object.
 func (u *UserController) UpdateUserFields(c *gin.Context) {
+	var fields map[string]any
+
 	uid, err := helpers.ParseUUID(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	var updates = handlers.HasValidUpdateUserFields(u.service, c, uid)
-	user, err := u.service.UpdateUserFields(c, uid, updates)
+	if err := c.ShouldBindJSON(&fields); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid update fields"})
+		return
+	}
+
+	user, err := u.service.UpdateUserFields(c, uid, fields)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return

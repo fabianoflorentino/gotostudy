@@ -31,7 +31,7 @@ func registerUserRoutes(r *gin.Engine, container *app.AppContainer) {
 	userController := controllers.NewUserController(container.UserService)
 
 	r.POST("/users", userController.CreateUser)
-	r.GET("/users", userController.GetUsers)
+	r.GET("/users", userController.GetAllUsers)
 	r.GET("/users/:id", userController.GetUserByID)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.PATCH("/users/:id", userController.UpdateUserFields)
