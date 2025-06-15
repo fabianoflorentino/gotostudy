@@ -57,9 +57,11 @@ func (r *PostgresUserRepository) Save(ctx context.Context, user *domain.User) er
 		}
 	}
 	model := User{
-		ID:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
+		ID:        user.ID,
+		Username:  user.Username,
+		Email:     user.Email,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 
 	return r.DB.Create(&model).Error
@@ -78,10 +80,12 @@ func (r *PostgresUserRepository) FindAll(ctx context.Context) ([]*domain.User, e
 	users := make([]*domain.User, len(models))
 	for i, model := range models {
 		users[i] = &domain.User{
-			ID:       model.ID,
-			Username: model.Username,
-			Email:    model.Email,
-			Tasks:    nil,
+			ID:        model.ID,
+			Username:  model.Username,
+			Email:     model.Email,
+			CreatedAt: model.CreatedAt,
+			UpdatedAt: model.UpdatedAt,
+			Tasks:     nil,
 		}
 	}
 
@@ -111,10 +115,12 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*d
 	}
 
 	return &domain.User{
-		ID:       model.ID,
-		Username: model.Username,
-		Email:    model.Email,
-		Tasks:    tasks,
+		ID:        model.ID,
+		Username:  model.Username,
+		Email:     model.Email,
+		CreatedAt: model.CreatedAt,
+		UpdatedAt: model.UpdatedAt,
+		Tasks:     tasks,
 	}, nil
 }
 
@@ -144,6 +150,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, id uuid.UUID, user 
 
 	model.Username = user.Username
 	model.Email = user.Email
+	model.UpdatedAt = user.UpdatedAt
 
 	return r.DB.Save(&model).Error
 }
@@ -163,10 +170,12 @@ func (r *PostgresUserRepository) UpdateFields(ctx context.Context, id uuid.UUID,
 	}
 
 	user := &domain.User{
-		ID:       model.ID,
-		Username: model.Username,
-		Email:    model.Email,
-		Tasks:    nil,
+		ID:        model.ID,
+		Username:  model.Username,
+		Email:     model.Email,
+		CreatedAt: model.CreatedAt,
+		UpdatedAt: model.UpdatedAt,
+		Tasks:     nil,
 	}
 
 	return user, nil
