@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	"github.com/fabianoflorentino/gotostudy/core"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
@@ -45,6 +46,8 @@ func (s *UserService) RegisterUser(ctx context.Context, user *domain.User) (*dom
 	}
 
 	user.ID = uuid.New()
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
 	user.Tasks = []domain.Task{}
 
 	if err := s.repo.Save(ctx, user); err != nil {
