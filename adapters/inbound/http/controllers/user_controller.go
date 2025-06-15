@@ -113,8 +113,9 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 	}
 
 	user := u.service.UpdateUser(c, uid, &domain.User{
-		Username: input.Username,
-		Email:    input.Email,
+		Username:  input.Username,
+		Email:     input.Email,
+		UpdatedAt: input.UpdatedAt,
 	})
 
 	c.JSON(http.StatusOK, user)
