@@ -40,9 +40,13 @@ func NewUserService(r ports.UserRepository) *UserService {
 // and initializes an empty list of tasks for the user. It then saves the user to the repository.
 // If the save operation fails, it logs the error and returns it. On success, it returns the created user.
 func (s *UserService) RegisterUser(ctx context.Context, user *domain.User) (*domain.User, error) {
-	existingUser, err := s.repo.FindByEmail(ctx, user.Email)
-	if err == nil && existingUser != nil {
-		return nil, core.ErrUserAlreadyExists
+	emailInUse, err := s.isEmailInUse(ctx, user.Email, uuid.Nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if emailInUse {
+		return nil, core.ErrEmailAlreadyExists
 	}
 
 	user.ID = uuid.New()
@@ -94,6 +98,17 @@ func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.Us
 // the updated user information. If the update operation fails, it logs the error and returns it.
 // Otherwise, it returns nil to indicate success.
 func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain.User) error {
+	// Check if the email is already in use by another user
+	if emailInUse, err := s.isEmailInUse(ctx, user.Email, id); err != nil {
+		return err
+	} else if emailInUse {
+		return core.ErrEmailAlreadyExists
+	}
+
+	// Set the ID and timestamps for the user being updated
+	user.ID = id
+	user.UpdatedAt = time.Now()
+
 	if err := s.repo.Update(ctx, id, user); err != nil {
 		log.Printf("Error updating user: %v", err)
 		return err
@@ -108,6 +123,19 @@ func (s *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain
 // If the update is successful, it returns the updated user object.
 // In case of an error during the update, it logs the error and returns it.
 func (s *UserService) UpdateUserFields(ctx context.Context, id uuid.UUID, fields map[string]any) (*domain.User, error) {
+	// Check if the email is already in use by another user
+	if email, ok := fields["email"].(string); ok {
+		if emailInUse, err := s.isEmailInUse(ctx, email, id); err != nil {
+			return nil, err
+		} else if emailInUse {
+			return nil, core.ErrEmailAlreadyExists
+		}
+	}
+
+	// Update the updated_at field to the current time
+	fields["updated_at"] = time.Now()
+
+	// Call the repository to update the user fields
 	updatedUser, err := s.repo.UpdateFields(ctx, id, fields)
 	if err != nil {
 		log.Printf("Error updating user fields: %v", fields)
@@ -126,4 +154,25 @@ func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	}
 
 	return nil
+}
+
+// isEmailInUse checks if the given email is already in use by another user in the repository.
+// It excludes the user with the specified excludeID from the check.
+// Returns true if the email is in use by a different user, false otherwise.
+// Returns an error if there is a problem accessing the repository.
+func (s *UserService) isEmailInUse(ctx context.Context, email string, excludeID uuid.UUID) (bool, error) {
+	existtingUser, err := s.repo.FindByEmail(ctx, email)
+	if err != nil {
+		if errors.Is(err, core.ErrEmailAlreadyExists) {
+			return false, nil
+		}
+
+		return false, nil
+	}
+
+	if excludeID != uuid.Nil && existtingUser.ID == excludeID {
+		return false, nil
+	}
+
+	return true, nil
 }
