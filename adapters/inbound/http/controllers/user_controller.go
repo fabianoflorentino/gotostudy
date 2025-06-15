@@ -145,7 +145,7 @@ func (u *UserController) UpdateUserFields(c *gin.Context) {
 	var updates = handlers.HasValidUpdateUserFields(u.service, c, uid)
 	user, err := u.service.UpdateUserFields(c, uid, updates)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
 
