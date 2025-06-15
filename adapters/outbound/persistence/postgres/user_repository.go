@@ -94,7 +94,7 @@ func (r *PostgresUserRepository) FindAll(ctx context.Context) ([]*domain.User, e
 func (r *PostgresUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	tasks := make([]domain.Task, len(model.Tasks))
 
-	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
+	if err := r.DB.Where("id = ?", id).First(&model).Error; err != nil {
 		return nil, err
 	}
 
@@ -138,7 +138,7 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
 // and saves the changes back to the database. If any error occurs during the process,
 // it returns the error.
 func (r *PostgresUserRepository) Update(ctx context.Context, id uuid.UUID, user *domain.User) error {
-	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
+	if err := r.DB.Where("id = ?", id).First(&model).Error; err != nil {
 		return err
 	}
 
@@ -154,7 +154,7 @@ func (r *PostgresUserRepository) Update(ctx context.Context, id uuid.UUID, user 
 // The method retrieves the user record, updates the specified fields, and saves the changes back to the database.
 // Returns the updated user as a domain.User object or an error if the operation fails.
 func (r *PostgresUserRepository) UpdateFields(ctx context.Context, id uuid.UUID, fields map[string]any) (*domain.User, error) {
-	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
+	if err := r.DB.Where("id = ?", id).First(&model).Error; err != nil {
 		return nil, err
 	}
 
@@ -177,7 +177,7 @@ func (r *PostgresUserRepository) UpdateFields(ctx context.Context, id uuid.UUID,
 // If the record is found, it deletes the record from the database.
 // Returns an error if the record is not found or if any database operation fails.
 func (r *PostgresUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := r.DB.First(&model, "id = ?", id).Error; err != nil {
+	if err := r.DB.Where("id = ?", id).First(&model).Error; err != nil {
 		return err
 	}
 
