@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/fabianoflorentino/gotostudy/core"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/ports"
 	"github.com/google/uuid"
@@ -99,7 +100,7 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*d
 	tasks := make([]domain.Task, len(model.Tasks))
 
 	if err := r.DB.Where("id = ?", id).First(&model).Error; err != nil {
-		return nil, err
+		return nil, core.ErrUserNotFound
 	}
 
 	for i, task := range model.Tasks {
