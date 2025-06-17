@@ -16,4 +16,4 @@ COPY --from=build /go/bin/gts /usr/local/bin/gts
 
 ENTRYPOINT ["/bin/sh"]
 
-CMD [ "-c", "while true; do echo 'Im study Golang!'; sleep 300; done" ]
+CMD [ "-c", "/usr/local/bin/gts" ]
