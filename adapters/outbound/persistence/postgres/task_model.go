@@ -19,7 +19,7 @@ type Task struct {
 	Title       string    `gorm:"not null"`
 	Description string    `gorm:"not null"`
 	Completed   bool      `gorm:"default:false"`
-	CreatedAt   time.Time `gorm:"autoCreateTime"`
-	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
+	CreatedAt   time.Time `gorm:"autoCreateTime:true"`
+	UpdatedAt   time.Time `gorm:"autoUpdateTime:true"`
 	UserID      uuid.UUID `gorm:"type:uuid;not null"`
 }
