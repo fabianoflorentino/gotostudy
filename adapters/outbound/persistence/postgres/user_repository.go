@@ -45,18 +45,6 @@ func NewPostgresUserRepository(db *gorm.DB) ports.UserRepository {
 // associated tasks of the user, preparing them for persistence.
 // Returns an error if the operation fails.
 func (r *PostgresUserRepository) Save(ctx context.Context, user *domain.User) error {
-	tasks := make([]*domain.Task, len(user.Tasks))
-	for i, task := range user.Tasks {
-		tasks[i] = &domain.Task{
-			ID:          task.ID,
-			Title:       task.Title,
-			Description: task.Description,
-			Completed:   task.Completed,
-			UserID:      task.UserID,
-			CreatedAt:   task.CreatedAt,
-			UpdatedAt:   task.UpdatedAt,
-		}
-	}
 	model := User{
 		ID:        user.ID,
 		Username:  user.Username,
