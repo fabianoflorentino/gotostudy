@@ -13,9 +13,9 @@ import (
 // TaskRepository defines the interface for interacting with task data storage.
 // It provides methods to find, save, update, and delete tasks.
 type TaskRepository interface {
+	Save(ctx context.Context, task *domain.Task) error
 	FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*domain.Task, error)
 	FindTaskByID(ctx context.Context, taskId uuid.UUID) (*domain.Task, error)
-	Save(ctx context.Context, task *domain.Task) error
 	Update(ctx context.Context, id uuid.UUID, task *domain.Task) error
 	Delete(ctx context.Context, id uuid.UUID) error
 }
