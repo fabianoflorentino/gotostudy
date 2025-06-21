@@ -52,7 +52,6 @@ func (s *UserService) RegisterUser(ctx context.Context, user *domain.User) (*dom
 	user.ID = uuid.New()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-	user.Tasks = []domain.Task{}
 
 	if err := s.repo.Save(ctx, user); err != nil {
 		log.Printf("Error saving user: %v", err)
