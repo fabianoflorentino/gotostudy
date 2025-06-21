@@ -8,4 +8,6 @@ var (
 	ErrEmailAlreadyExists = errors.New("email already exists")
 	ErrInvalidUpdateField = errors.New("invalid update fields")
 	ErrNoTasksFound       = errors.New("no tasks found for user")
+	ErrInvalidTaskID      = errors.New("invalid task ID")
+	ErrTaskNotFound       = errors.New("task not found")
 )
