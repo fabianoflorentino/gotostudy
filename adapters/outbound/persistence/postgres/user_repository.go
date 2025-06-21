@@ -74,7 +74,6 @@ func (r *PostgresUserRepository) FindAll(ctx context.Context) ([]*domain.User, e
 			Email:     model.Email,
 			CreatedAt: model.CreatedAt,
 			UpdatedAt: model.UpdatedAt,
-			Tasks:     nil,
 		}
 	}
 
@@ -109,7 +108,6 @@ func (r *PostgresUserRepository) FindByID(ctx context.Context, id uuid.UUID) (*d
 		Email:     model.Email,
 		CreatedAt: model.CreatedAt,
 		UpdatedAt: model.UpdatedAt,
-		Tasks:     tasks,
 	}, nil
 }
 
@@ -124,7 +122,6 @@ func (r *PostgresUserRepository) FindByEmail(ctx context.Context, email string) 
 		ID:       model.ID,
 		Username: model.Username,
 		Email:    model.Email,
-		Tasks:    nil,
 	}, nil
 }
 
@@ -164,7 +161,6 @@ func (r *PostgresUserRepository) UpdateFields(ctx context.Context, id uuid.UUID,
 		Email:     model.Email,
 		CreatedAt: model.CreatedAt,
 		UpdatedAt: model.UpdatedAt,
-		Tasks:     nil,
 	}
 
 	return user, nil
