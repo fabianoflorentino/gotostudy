@@ -48,10 +48,10 @@ func (t *TaskService) CreateTask(ctx context.Context, task *domain.Task) error {
 	return nil
 }
 
-// GetUserTasks retrieves all tasks associated with the specified user ID.
+// FindUserTasks retrieves all tasks associated with the specified user ID.
 // It accepts a context for request-scoped values and cancellation, and a userID of type uuid.UUID.
 // Returns a slice of pointers to domain.Task and an error if the operation fails.
-func (t *TaskService) GetUserTasks(ctx context.Context, userID uuid.UUID) ([]*domain.Task, error) {
+func (t *TaskService) FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*domain.Task, error) {
 	if !userExists(ctx, userID) {
 		return nil, core.ErrUserNotFound
 	}
