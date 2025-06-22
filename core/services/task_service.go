@@ -101,7 +101,7 @@ func (t *TaskService) DeleteTask(ctx context.Context, taskID uuid.UUID) error {
 }
 
 func userExists(ctx context.Context, userID uuid.UUID) bool {
-	user, err := UserService{}.repo.FindByID(ctx, userID)
+	user, err := UserService{}.usr.FindByID(ctx, userID)
 	if err != nil {
 		return false
 	}
