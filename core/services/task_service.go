@@ -1,3 +1,14 @@
+// Package services provides the service layer implementations for managing tasks in the application.
+// It defines the TaskService struct, which interacts with the TaskRepository to perform CRUD operations
+// on tasks, ensuring business logic and validation are applied before accessing the data layer.
+//
+// The TaskService includes methods for creating, retrieving, updating, and deleting tasks, as well as
+// utility functions to check the existence of users and tasks. It acts as an intermediary between the
+// application's core logic and the underlying data repositories, enforcing rules such as user existence
+// and task validation.
+//
+// This package depends on the core, domain, and ports packages for error definitions, domain models,
+// and repository interfaces, respectively.
 package services
 
 import (
