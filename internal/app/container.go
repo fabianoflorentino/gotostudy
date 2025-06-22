@@ -21,6 +21,7 @@ import (
 type AppContainer struct {
 	DB          *gorm.DB
 	UserService *services.UserService
+	TaskService *services.TaskService
 }
 
 // NewAppContainer initializes and returns a new instance of AppContainer.
@@ -34,15 +35,34 @@ func NewAppContainer() *AppContainer {
 	}
 
 	dbConn := database.DB
-	repo := postgres.NewPostgresUserRepository(dbConn)
-	service := services.NewUserService(repo)
-
-	if err := dbConn.AutoMigrate(&domain.User{}); err != nil {
-		log.Printf("failed to migrate database: %v", err)
-	}
+	usrService := usrService(dbConn)
+	tskService := tskService(dbConn)
 
 	return &AppContainer{
 		DB:          dbConn,
-		UserService: service,
+		UserService: usrService,
+		TaskService: tskService,
 	}
+}
+
+func usrService(db *gorm.DB) *services.UserService {
+	usr := postgres.NewPostgresUserRepository(db)
+	usrService := services.NewUserService(usr)
+
+	if err := db.AutoMigrate(&domain.User{}); err != nil {
+		log.Printf("failed to migrate user repository: %v", err)
+	}
+
+	return usrService
+}
+
+func tskService(db *gorm.DB) *services.TaskService {
+	tsk := postgres.NewPostgresTaskRepository(db)
+	tskService := services.NewTaskService(tsk)
+
+	if err := db.AutoMigrate(&domain.Task{}); err != nil {
+		log.Printf("failed to migrate task repository: %v", err)
+	}
+
+	return tskService
 }
