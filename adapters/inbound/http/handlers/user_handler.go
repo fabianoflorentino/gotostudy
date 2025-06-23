@@ -7,12 +7,7 @@
 package handlers
 
 import (
-	"net/http"
-
-	"github.com/fabianoflorentino/gotostudy/adapters/inbound/http/helpers"
-	"github.com/fabianoflorentino/gotostudy/core/services"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // ShouldBindJSON is a helper function that attempts to bind the JSON payload
@@ -27,21 +22,4 @@ func ShouldBindJSON(c *gin.Context, input any) error {
 	}
 
 	return nil
-}
-
-// HasValidUpdateUserFields checks if a user exists, parses update fields,
-// and validates them. Returns nil if the user doesn't exist, parsing fails,
-// or updates are invalid. Otherwise, returns a map of valid update fields.
-func HasValidUpdateUserFields(service *services.UserService, c *gin.Context, uid uuid.UUID) map[string]any {
-	updates, err := helpers.ParseUpdateFields(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return nil
-	}
-
-	if !helpers.HasValidUpdates(updates, c) {
-		return nil
-	}
-
-	return updates
 }
