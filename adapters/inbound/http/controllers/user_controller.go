@@ -88,7 +88,6 @@ func (u *UserController) GetUserByID(c *gin.Context) {
 		return
 	}
 
-	// If the user is found, return it with a 200 OK status
 	c.JSON(http.StatusOK, user)
 }
 
