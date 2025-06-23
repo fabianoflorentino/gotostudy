@@ -28,8 +28,8 @@ type UserController struct {
 // the business logic related to user operations. This function initializes
 // the UserController with the provided service and prepares it for handling
 // HTTP requests related to user management.
-func NewUserController(s *services.UserService) *UserController {
-	return &UserController{service: s}
+func NewUserController(u *services.UserService) *UserController {
+	return &UserController{service: u}
 }
 
 // CreateUser handles the HTTP request for creating a new user.
