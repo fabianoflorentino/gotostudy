@@ -8,9 +8,7 @@ package helpers
 
 import (
 	"fmt"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
@@ -24,49 +22,4 @@ func ParseUUID(id string) (uuid.UUID, error) {
 	}
 
 	return uid, nil
-}
-
-// ParseUpdateFields parses and validates the JSON payload from the HTTP request context
-// to extract fields for updating a user. It ensures that only valid fields are included
-// in the update map. If the JSON payload contains invalid fields or cannot be bound,
-// an error is returned.
-//
-// Parameters:
-// - c: The Gin HTTP request context containing the JSON payload.
-//
-// Returns:
-// - A map of valid fields to be updated and their corresponding values.
-// - An error if the JSON payload is invalid or contains unsupported fields.
-func ParseUpdateFields(c *gin.Context) (map[string]any, error) {
-	var updates map[string]any
-
-	if err := c.ShouldBindJSON(&updates); err != nil {
-		return nil, err
-	}
-
-	validFields := map[string]bool{
-		"username": true,
-		"email":    true,
-	}
-
-	for field := range updates {
-		if !validFields[field] {
-			return nil, fmt.Errorf("invalid field: %s", field)
-		}
-	}
-
-	return updates, nil
-}
-
-// HasValidUpdates checks if the provided updates map contains any valid fields to update.
-// If the map is empty, it responds with a 400 Bad Request status and an error message
-// indicating that there are no valid fields to update. Returns true if the updates map
-// is not empty, otherwise returns false.
-func HasValidUpdates(updates map[string]any, c *gin.Context) bool {
-	if len(updates) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "No valid fields to update"})
-		return false
-	}
-
-	return true
 }
