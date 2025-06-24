@@ -13,6 +13,7 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/fabianoflorentino/gotostudy/core"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
@@ -24,24 +25,30 @@ import (
 // It acts as a service layer between the application logic and the data access layer.
 type TaskService struct {
 	tsk ports.TaskRepository
+	usr ports.UserRepository
 }
 
 // NewTaskService creates a new instance of TaskService using the provided TaskRepository.
 // It returns a pointer to the initialized TaskService.
-func NewTaskService(t ports.TaskRepository) *TaskService {
-	return &TaskService{tsk: t}
+func NewTaskService(t ports.TaskRepository, u ports.UserRepository) *TaskService {
+	return &TaskService{tsk: t, usr: u}
 }
 
 // CreateTask creates a new task for the specified user.
 // It first checks if the user exists; if not, it returns core.ErrUserNotFound.
 // If the user exists, it attempts to save the task using the underlying task repository.
 // Returns an error if saving fails, or nil on success.
-func (t *TaskService) CreateTask(ctx context.Context, task *domain.Task) error {
-	if !userExists(ctx, task.UserID) {
+func (t *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, task *domain.Task) error {
+	if !t.userExists(ctx, userID) {
 		return core.ErrUserNotFound
 	}
 
-	if err := t.tsk.Save(ctx, task); err != nil {
+	task.ID = uuid.New()
+	task.UserID = userID
+	task.CreatedAt = time.Now()
+	task.UpdatedAt = time.Now()
+
+	if err := t.tsk.Save(ctx, userID, task); err != nil {
 		return err
 	}
 
@@ -52,7 +59,7 @@ func (t *TaskService) CreateTask(ctx context.Context, task *domain.Task) error {
 // It accepts a context for request-scoped values and cancellation, and a userID of type uuid.UUID.
 // Returns a slice of pointers to domain.Task and an error if the operation fails.
 func (t *TaskService) FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*domain.Task, error) {
-	if !userExists(ctx, userID) {
+	if !t.userExists(ctx, userID) {
 		return nil, core.ErrUserNotFound
 	}
 
@@ -103,9 +110,9 @@ func (t *TaskService) UpdateTask(ctx context.Context, taskID uuid.UUID, task *do
 	}
 
 	// Check if the user exists before proceeding with the task update.
-	if !userExists(ctx, taskID) {
-		return core.ErrUserNotFound
-	}
+	// if !userExists(ctx, taskID) {
+	// 	return core.ErrUserNotFound
+	// }
 
 	// Check if the task exists before updating it.
 	existingTask, err := t.taskExists(ctx, taskID)
@@ -147,8 +154,8 @@ func (t *TaskService) DeleteTask(ctx context.Context, taskID uuid.UUID) error {
 
 // userExists checks if a user with the given userID exists in the system.
 // It returns true if the user exists, false otherwise.
-func userExists(ctx context.Context, userID uuid.UUID) bool {
-	user, err := UserService{}.usr.FindByID(ctx, userID)
+func (t *TaskService) userExists(ctx context.Context, userID uuid.UUID) bool {
+	user, err := t.usr.FindByID(ctx, userID)
 	if err != nil {
 		return false
 	}
