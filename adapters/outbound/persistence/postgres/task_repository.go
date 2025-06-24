@@ -16,8 +16,8 @@ type PostgresTaskRepository struct {
 }
 
 var (
-	tasks []Task
-	task  Task
+	// tasks []Task
+	task Task
 )
 
 // NewPostgresTaskRepository creates a new instance of PostgresTaskRepository.
@@ -28,18 +28,18 @@ func NewPostgresTaskRepository(db *gorm.DB) *PostgresTaskRepository {
 // Save persists the given Task domain entity into the PostgreSQL database.
 // It converts the domain.Task to the persistence model and inserts it using GORM.
 // Returns an error if the operation fails.
-func (t *PostgresTaskRepository) Save(ctx context.Context, task *domain.Task) error {
-	model := Task{
+func (t *PostgresTaskRepository) Save(ctx context.Context, userID uuid.UUID, task *domain.Task) error {
+	newTask := Task{
 		ID:          task.ID,
 		Title:       task.Title,
 		Description: task.Description,
 		Completed:   task.Completed,
 		CreatedAt:   task.CreatedAt,
 		UpdatedAt:   task.UpdatedAt,
-		UserID:      task.UserID,
+		UserID:      userID,
 	}
 
-	return t.DB.Create(&model).Error
+	return t.DB.Create(&newTask).Error
 }
 
 // FindUserTasks retrieves all tasks associated with the specified user ID from the database.
@@ -53,12 +53,14 @@ func (t *PostgresTaskRepository) Save(ctx context.Context, task *domain.Task) er
 //   - []*domain.Task: A slice containing pointers to the retrieved tasks.
 //   - error: An error object if the operation fails, otherwise nil.
 func (t *PostgresTaskRepository) FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*domain.Task, error) {
-	if err := t.DB.Where("user_id = ?", userID).Find(&tasks).Error; err != nil {
+	var listTasks []Task
+
+	if err := t.DB.Where("user_id = ?", userID).Find(&listTasks).Error; err != nil {
 		return nil, err
 	}
 
-	tasks := make([]*domain.Task, len(tasks))
-	for i, t := range tasks {
+	tasks := make([]*domain.Task, len(listTasks))
+	for i, t := range listTasks {
 		tasks[i] = &domain.Task{
 			ID:          t.ID,
 			Title:       t.Title,
