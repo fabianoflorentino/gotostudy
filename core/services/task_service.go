@@ -88,12 +88,8 @@ func (t *TaskService) FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*d
 // Returns:
 //   - *domain.Task: pointer to the retrieved Task, or nil if not found or on error.
 //   - error: error encountered during retrieval, or nil if successful.
-func (t *TaskService) GetTaskByID(ctx context.Context, taskID uuid.UUID) (*domain.Task, error) {
-	if taskID == uuid.Nil {
-		return nil, core.ErrInvalidTaskID
-	}
-
-	task, err := t.taskExists(ctx, taskID)
+func (t *TaskService) FindTaskByID(ctx context.Context, userID uuid.UUID, taskID uuid.UUID) (*domain.Task, error) {
+	task, err := t.taskExists(ctx, userID, taskID)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +100,7 @@ func (t *TaskService) GetTaskByID(ctx context.Context, taskID uuid.UUID) (*domai
 // UpdateTask updates an existing task identified by taskID with the provided task details.
 // It returns an error if the taskID is invalid, the user does not exist, or if there is a failure
 // during the update process.
-func (t *TaskService) UpdateTask(ctx context.Context, taskID uuid.UUID, task *domain.Task) error {
+func (t *TaskService) UpdateTask(ctx context.Context, userID uuid.UUID, taskID uuid.UUID, task *domain.Task) error {
 	if taskID == uuid.Nil {
 		return core.ErrInvalidTaskID
 	}
@@ -115,7 +111,7 @@ func (t *TaskService) UpdateTask(ctx context.Context, taskID uuid.UUID, task *do
 	// }
 
 	// Check if the task exists before updating it.
-	existingTask, err := t.taskExists(ctx, taskID)
+	existingTask, err := t.taskExists(ctx, userID, taskID)
 	if err != nil {
 		return err
 	}
@@ -134,14 +130,14 @@ func (t *TaskService) UpdateTask(ctx context.Context, taskID uuid.UUID, task *do
 // DeleteTask deletes a task identified by the given taskID.
 // It returns an error if the taskID is invalid, if the task does not exist,
 // or if there is a failure during the deletion process.
-func (t *TaskService) DeleteTask(ctx context.Context, taskID uuid.UUID) error {
+func (t *TaskService) DeleteTask(ctx context.Context, userID uuid.UUID, taskID uuid.UUID) error {
 	// Validate the taskID to ensure it is not a nil UUID.
 	if taskID == uuid.Nil {
 		return core.ErrInvalidTaskID
 	}
 
 	// Check if the task exists before attempting to delete it.'
-	if _, err := t.taskExists(ctx, taskID); err != nil {
+	if _, err := t.taskExists(ctx, userID, taskID); err != nil {
 		return err
 	}
 
@@ -169,8 +165,8 @@ func (t *TaskService) userExists(ctx context.Context, userID uuid.UUID) bool {
 
 // taskExists checks if a task with the given taskID exists in the system.
 // It retrieves the task from the repository and returns it if found.
-func (t *TaskService) taskExists(ctx context.Context, taskID uuid.UUID) (*domain.Task, error) {
-	task, err := t.tsk.FindTaskByID(ctx, taskID)
+func (t *TaskService) taskExists(ctx context.Context, userID uuid.UUID, taskID uuid.UUID) (*domain.Task, error) {
+	task, err := t.tsk.FindTaskByID(ctx, userID, taskID)
 	if err != nil {
 		return nil, err
 	}
