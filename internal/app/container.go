@@ -58,7 +58,8 @@ func usrService(db *gorm.DB) *services.UserService {
 
 func tskService(db *gorm.DB) *services.TaskService {
 	tsk := postgres.NewPostgresTaskRepository(db)
-	tskService := services.NewTaskService(tsk)
+	usr := postgres.NewPostgresUserRepository(db)
+	tskService := services.NewTaskService(tsk, usr)
 
 	if err := db.AutoMigrate(&domain.Task{}); err != nil {
 		log.Printf("failed to migrate task repository: %v", err)
