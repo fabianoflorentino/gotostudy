@@ -86,8 +86,8 @@ func (t *PostgresTaskRepository) FindUserTasks(ctx context.Context, userID uuid.
 // Returns:
 //   - *domain.Task: pointer to the found task, or nil if not found.
 //   - error: error encountered during the operation, or nil if successful.
-func (t *PostgresTaskRepository) FindTaskByID(ctx context.Context, taskID uuid.UUID) (*domain.Task, error) {
-	if err := t.DB.Where("id = ?", taskID).First(&task).Error; err != nil {
+func (t *PostgresTaskRepository) FindTaskByID(ctx context.Context, userID uuid.UUID, taskID uuid.UUID) (*domain.Task, error) {
+	if err := t.DB.Where("id = ? AND user_id = ?", taskID, userID).First(&task).Error; err != nil {
 		return nil, err
 	}
 
