@@ -68,3 +68,30 @@ func (t *TaskController) FindUserTasks(c *gin.Context) {
 
 	c.JSON(http.StatusOK, tasks)
 }
+
+// FindTaskByID handles HTTP requests to retrieve a specific task by its ID for a given user.
+// It expects "id" (user ID) and "task_id" (task ID) as URL parameters.
+// If the parameters are invalid UUIDs, it responds with HTTP 400 Bad Request.
+// If the task cannot be found or another error occurs, it responds with HTTP 422 Unprocessable Entity.
+// On success, it responds with HTTP 200 OK and the task data in JSON format.
+func (t *TaskController) FindTaskByID(c *gin.Context) {
+	userID, err := helpers.ParseUUID(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	taskID, err := helpers.ParseUUID(c.Param("task_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
+		return
+	}
+
+	task, err := t.task.FindTaskByID(c, userID, taskID)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, task)
+}
