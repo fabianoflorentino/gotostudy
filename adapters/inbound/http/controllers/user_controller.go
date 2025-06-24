@@ -106,8 +106,6 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	handlers.ShouldBindJSON(c, &input)
-
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
