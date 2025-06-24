@@ -18,6 +18,7 @@ func StartHTTPServer(container *app.AppContainer) {
 	setTrustedProxies(r)
 
 	registerUserRoutes(r, container)
+	registerTaskRoutes(r, container)
 	registerHealthRoutes(r)
 
 	if err := r.Run(":" + os.Getenv("PORT")); err != nil {
@@ -36,6 +37,18 @@ func registerUserRoutes(r *gin.Engine, container *app.AppContainer) {
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.PATCH("/users/:id", userController.UpdateUserFields)
 	r.DELETE("/users/:id", userController.DeleteUser)
+}
+
+// RegisterTaskRoutes sets up the task-related routes for the Gin HTTP server.
+func registerTaskRoutes(r *gin.Engine, container *app.AppContainer) {
+	taskController := controllers.NewTaskController(container.TaskService)
+
+	r.POST("/users/:id/tasks", taskController.CreateTask)
+	r.GET("/users/:id/tasks", taskController.FindUserTasks)
+	// r.GET("/tasks/:id", taskController.GetTaskByID)
+	// r.PUT("/tasks/:id", taskController.UpdateTask)
+	// r.PATCH("/tasks/:id", taskController.UpdateTaskFields)
+	// r.DELETE("/tasks/:id", taskController.DeleteTask)
 }
 
 // RegisterHealthRoutes sets up the health check route for the Gin HTTP server.
