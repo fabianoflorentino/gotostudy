@@ -45,7 +45,7 @@ func registerTaskRoutes(r *gin.Engine, container *app.AppContainer) {
 
 	r.POST("/users/:id/tasks", taskController.CreateTask)
 	r.GET("/users/:id/tasks", taskController.FindUserTasks)
-	// r.GET("/tasks/:id", taskController.GetTaskByID)
+	r.GET("/users/:id/tasks/:task_id", taskController.FindTaskByID)
 	// r.PUT("/tasks/:id", taskController.UpdateTask)
 	// r.PATCH("/tasks/:id", taskController.UpdateTaskFields)
 	// r.DELETE("/tasks/:id", taskController.DeleteTask)
