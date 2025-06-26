@@ -9,8 +9,25 @@ package helpers
 import (
 	"fmt"
 
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
+
+func ValidateUUIDParams(c *gin.Context, param ...string) ([]uuid.UUID, bool) {
+	uuids := make([]uuid.UUID, len(param))
+
+	for _, p := range param {
+		idStr := c.Param(p)
+		parsedUUID, err := ParseUUID(idStr)
+		if err != nil {
+			return nil, false
+		}
+
+		uuids = append(uuids, parsedUUID)
+	}
+
+	return uuids, true
+}
 
 // ParseUUID takes a string representation of a UUID and attempts to parse it into a uuid.UUID object.
 // If the provided string is not a valid UUID, it returns an error indicating the issue.
