@@ -69,7 +69,6 @@ func (t *TaskService) FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*d
 		return nil, err
 	}
 
-	// If no tasks are found, return an error indicating no tasks were found for the user.
 	if len(tasks) == 0 {
 		return nil, core.ErrNoTasksFound
 	}
