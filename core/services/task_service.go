@@ -63,7 +63,6 @@ func (t *TaskService) FindUserTasks(ctx context.Context, userID uuid.UUID) ([]*d
 		return nil, core.ErrUserNotFound
 	}
 
-	// Retrieve tasks for the user from the task repository.
 	tasks, err := t.tsk.FindUserTasks(ctx, userID)
 	if err != nil {
 		return nil, err
