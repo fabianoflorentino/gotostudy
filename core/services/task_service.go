@@ -106,9 +106,9 @@ func (t *TaskService) UpdateTask(ctx context.Context, userID uuid.UUID, taskID u
 	}
 
 	// Check if the user exists before proceeding with the task update.
-	// if !userExists(ctx, taskID) {
-	// 	return core.ErrUserNotFound
-	// }
+	if !t.userExists(ctx, userID) {
+		return core.ErrUserNotFound
+	}
 
 	// Check if the task exists before updating it.
 	existingTask, err := t.taskExists(ctx, userID, taskID)
