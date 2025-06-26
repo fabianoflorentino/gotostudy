@@ -62,7 +62,7 @@ func (t *TaskController) FindUserTasks(c *gin.Context) {
 
 	tasks, err := t.task.FindUserTasks(c, uid)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusOK, gin.H{"message": "user not have tasks"})
 		return
 	}
 
