@@ -89,7 +89,7 @@ func (t *TaskController) FindTaskByID(c *gin.Context) {
 
 	task, err := t.task.FindTaskByID(c, userID, taskID)
 	if err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"message": "task not found"})
 		return
 	}
 
