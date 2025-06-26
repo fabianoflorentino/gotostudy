@@ -34,13 +34,15 @@ func (t *TaskController) CreateTask(c *gin.Context) {
 		return
 	}
 
-	uid, err := helpers.ParseUUID(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	params, ok := helpers.ValidateUUIDParams(c, "id")
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid userID"})
 		return
 	}
 
-	if err := t.task.CreateTask(c, uid, task); err != nil {
+	userID := params[0]
+
+	if err := t.task.CreateTask(c, userID, task); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
@@ -54,13 +56,15 @@ func (t *TaskController) CreateTask(c *gin.Context) {
 // If an error occurs while retrieving tasks, it responds with HTTP 422 Unprocessable Entity.
 // On success, it responds with HTTP 200 OK and the list of tasks.
 func (t *TaskController) FindUserTasks(c *gin.Context) {
-	uid, err := helpers.ParseUUID(c.Param("id"))
-	if err != nil {
+	params, ok := helpers.ValidateUUIDParams(c, "id")
+	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
 		return
 	}
 
-	tasks, err := t.task.FindUserTasks(c, uid)
+	userID := params[0]
+
+	tasks, err := t.task.FindUserTasks(c, userID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"message": "user not have tasks"})
 		return
@@ -75,17 +79,14 @@ func (t *TaskController) FindUserTasks(c *gin.Context) {
 // If the task cannot be found or another error occurs, it responds with HTTP 422 Unprocessable Entity.
 // On success, it responds with HTTP 200 OK and the task data in JSON format.
 func (t *TaskController) FindTaskByID(c *gin.Context) {
-	userID, err := helpers.ParseUUID(c.Param("id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+	params, ok := helpers.ValidateUUIDParams(c, "id", "task_id")
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user or task ID"})
 		return
 	}
 
-	taskID, err := helpers.ParseUUID(c.Param("task_id"))
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID"})
-		return
-	}
+	userID := params[0]
+	taskID := params[1]
 
 	task, err := t.task.FindTaskByID(c, userID, taskID)
 	if err != nil {
@@ -94,4 +95,33 @@ func (t *TaskController) FindTaskByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, task)
+}
+
+// UpdateTask handles HTTP PUT requests to update an existing task for a specific user.
+// It parses the user ID and task ID from the URL parameters, binds the request body to a Task struct,
+// and calls the service layer to update the task. Returns appropriate HTTP status codes and error messages
+// for invalid input or update failures.
+func (t *TaskController) UpdateTask(c *gin.Context) {
+	params, ok := helpers.ValidateUUIDParams(c, "id", "task_id")
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user or task ID"})
+		return
+	}
+
+	userID := params[0]
+	taskID := params[1]
+
+	var task domain.Task
+
+	if err := handlers.ShouldBindJSON(c, &task); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request, title and description are required"})
+		return
+	}
+
+	if err := t.task.UpdateTask(c, userID, taskID, &task); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, "")
 }
