@@ -27,6 +27,7 @@ func NewTaskController(t *services.TaskService) *TaskController {
 // If the task creation fails, it responds with a 422 Unprocessable Entity and the error message.
 // On success, it responds with a 201 Created status and the created task in the response body.
 func (t *TaskController) CreateTask(c *gin.Context) {
+
 	var task = &domain.Task{}
 
 	if err := handlers.ShouldBindJSON(c, &task); err != nil {
@@ -102,21 +103,21 @@ func (t *TaskController) FindTaskByID(c *gin.Context) {
 // and calls the service layer to update the task. Returns appropriate HTTP status codes and error messages
 // for invalid input or update failures.
 func (t *TaskController) UpdateTask(c *gin.Context) {
+	var task domain.Task
+
 	params, ok := helpers.ValidateUUIDParams(c, "id", "task_id")
 	if !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user or task ID"})
 		return
 	}
 
-	userID := params[0]
-	taskID := params[1]
-
-	var task domain.Task
-
 	if err := handlers.ShouldBindJSON(c, &task); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request, title and description are required"})
 		return
 	}
+
+	userID := params[0]
+	taskID := params[1]
 
 	if err := t.task.UpdateTask(c, userID, taskID, &task); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
