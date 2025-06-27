@@ -124,5 +124,5 @@ func (t *TaskController) UpdateTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, "")
+	c.JSON(http.StatusNoContent, gin.H{})
 }
