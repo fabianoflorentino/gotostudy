@@ -14,7 +14,7 @@ import (
 )
 
 func ValidateUUIDParams(c *gin.Context, param ...string) ([]uuid.UUID, bool) {
-	uuids := make([]uuid.UUID, len(param))
+	uuids := make([]uuid.UUID, 0, len(param))
 
 	for _, p := range param {
 		idStr := c.Param(p)
