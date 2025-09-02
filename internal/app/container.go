@@ -30,16 +30,17 @@ type AppContainer struct {
 // during database initialization or migration, they are logged. The returned
 // AppContainer includes the database connection and the user service.
 func NewAppContainer() *AppContainer {
-	if err := database.InitDB(); err != nil {
+	db, err := database.InitDB()
+	if err != nil {
 		log.Printf("failed to initialize database: %v", err)
+		return nil
 	}
 
-	dbConn := database.DB
-	usrService := usrService(dbConn)
-	tskService := tskService(dbConn)
+	usrService := usrService(db)
+	tskService := tskService(db)
 
 	return &AppContainer{
-		DB:          dbConn,
+		DB:          db,
 		UserService: usrService,
 		TaskService: tskService,
 	}
@@ -47,13 +48,13 @@ func NewAppContainer() *AppContainer {
 
 func usrService(db *gorm.DB) *services.UserService {
 	usr := postgres.NewPostgresUserRepository(db)
-	usrService := services.NewUserService(usr)
+	srv := services.NewUserService(usr)
 
 	if err := db.AutoMigrate(&domain.User{}); err != nil {
 		log.Printf("failed to migrate user repository: %v", err)
 	}
 
-	return usrService
+	return srv
 }
 
 func tskService(db *gorm.DB) *services.TaskService {
