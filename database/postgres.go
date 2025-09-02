@@ -16,27 +16,13 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	username = os.Getenv("POSTGRES_USER")
-	host     = os.Getenv("POSTGRES_HOST")
-	password = os.Getenv("POSTGRES_PASSWORD")
-	database = os.Getenv("POSTGRES_DB")
-	port     = os.Getenv("POSTGRES_PORT")
-	sslmode  = os.Getenv("POSTGRES_SSLMODE")
-	timezone = os.Getenv("POSTGRES_TIMEZONE")
-)
-
-var (
-	exists bool
-	DB     *gorm.DB
-)
-
 // InitDB initializes the database connection using GORM and PostgreSQL.
 // It reads the connection parameters from environment variables and sets up
 // the database connection. It also enables the pgcrypto extension if it is not
 // already enabled. The function logs fatal errors if the connection fails or
 // if the extension cannot be enabled.
-func InitDB() error {
+func InitDB() (*gorm.DB, error) {
+
 	dsn := setPostgresConnectionString()
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
@@ -51,7 +37,6 @@ func InitDB() error {
 		log.Fatalf("failed to enable pgcrypto extension: %v", err)
 	}
 
-	DB = db
 	if err := runMigrations(db,
 		domain.User{},
 		domain.Task{},
@@ -59,11 +44,13 @@ func InitDB() error {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
-	return nil
+	return db, nil
 }
 
 // enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not.
 func EnablePgcryptoExtension(db *gorm.DB) error {
+	var exists bool
+
 	createQuery := "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 	checkQuery := "SELECT EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pgcrypto');"
 
@@ -87,6 +74,16 @@ func EnablePgcryptoExtension(db *gorm.DB) error {
 // using the environment variables defined above.
 // It returns a string that can be used to connect to the PostgreSQL database.
 func setPostgresConnectionString() string {
+	var (
+		username string = os.Getenv("POSTGRES_USER")
+		host     string = os.Getenv("POSTGRES_HOST")
+		password string = os.Getenv("POSTGRES_PASSWORD")
+		database string = os.Getenv("POSTGRES_DB")
+		port     string = os.Getenv("POSTGRES_PORT")
+		sslmode  string = os.Getenv("POSTGRES_SSLMODE")
+		timezone string = os.Getenv("POSTGRES_TIMEZONE")
+	)
+
 	return "user=" + username + " password=" + password + " host=" + host +
 		" port=" + port + " dbname=" + database +
 		" sslmode=" + sslmode + " TimeZone=" + timezone
