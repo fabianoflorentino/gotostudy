@@ -15,6 +15,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"regexp"
 	"time"
 
 	"github.com/fabianoflorentino/gotostudy/core"
@@ -40,6 +41,11 @@ func NewUserService(u ports.UserRepository) *UserService {
 // and initializes an empty list of tasks for the user. It then saves the user to the repository.
 // If the save operation fails, it logs the error and returns it. On success, it returns the created user.
 func (u *UserService) RegisterUser(ctx context.Context, user *domain.User) (*domain.User, error) {
+	// Validate email format
+	if err := u.isEmailValid(user.Email); err != nil {
+		return nil, err
+	}
+
 	emailInUse, err := u.isEmailInUse(ctx, user.Email, uuid.Nil)
 	if err != nil {
 		return nil, err
@@ -97,6 +103,11 @@ func (u *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.Us
 // the updated user information. If the update operation fails, it logs the error and returns it.
 // Otherwise, it returns nil to indicate success.
 func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain.User) error {
+	// Validate email format
+	if emailValid := u.isEmailValid(user.Email); emailValid != nil {
+		return core.ErrInvalidEmail
+	}
+
 	// Check if the email is already in use by another user
 	if emailInUse, err := u.isEmailInUse(ctx, user.Email, id); err != nil {
 		return err
@@ -174,4 +185,13 @@ func (u *UserService) isEmailInUse(ctx context.Context, email string, excludeID 
 	}
 
 	return true, nil
+}
+
+func (u *UserService) isEmailValid(email string) error {
+	// Use a simple regex to validate the email format
+	const emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	if !regexp.MustCompile(emailRegex).MatchString(email) {
+		return core.ErrInvalidEmail
+	}
+	return nil
 }
