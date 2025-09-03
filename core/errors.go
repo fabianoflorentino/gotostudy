@@ -10,4 +10,5 @@ var (
 	ErrNoTasksFound       = errors.New("no tasks found for user")
 	ErrInvalidTaskID      = errors.New("invalid task ID")
 	ErrTaskNotFound       = errors.New("task not found")
+	ErrInvalidEmail       = errors.New("invalid email format")
 )
