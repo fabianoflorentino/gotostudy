@@ -52,7 +52,7 @@ principles with hexagonal architecture patterns.
   }
   ```
 
-- [ ] **Create unit tests for services**
+- [x] **Create unit tests for services**
   - Test all business logic in `core/services/`
   - Use table-driven tests for multiple scenarios
   - Mock external dependencies
