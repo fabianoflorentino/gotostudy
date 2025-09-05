@@ -15,12 +15,12 @@ import (
 	"context"
 	"errors"
 	"log"
-	"regexp"
 	"time"
 
 	"github.com/fabianoflorentino/gotostudy/core"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/ports"
+	"github.com/fabianoflorentino/gotostudy/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -42,11 +42,11 @@ func NewUserService(u ports.UserRepository) *UserService {
 // If the save operation fails, it logs the error and returns it. On success, it returns the created user.
 func (u *UserService) RegisterUser(ctx context.Context, user *domain.User) (*domain.User, error) {
 	// Validate email format
-	if err := u.isEmailValid(user.Email); err != nil {
+	if err := utils.IsEmailValid(user.Email); err != nil {
 		return nil, err
 	}
 
-	emailInUse, err := u.isEmailInUse(ctx, user.Email, uuid.Nil)
+	emailInUse, err := utils.IsEmailInUse(u.usr, ctx, user.Email, uuid.Nil)
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +104,12 @@ func (u *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (*domain.Us
 // Otherwise, it returns nil to indicate success.
 func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain.User) error {
 	// Validate email format
-	if emailValid := u.isEmailValid(user.Email); emailValid != nil {
+	if emailValid := utils.IsEmailValid(user.Email); emailValid != nil {
 		return core.ErrInvalidEmail
 	}
 
 	// Check if the email is already in use by another user
-	if emailInUse, err := u.isEmailInUse(ctx, user.Email, id); err != nil {
+	if emailInUse, err := utils.IsEmailInUse(u.usr, ctx, user.Email, id); err != nil {
 		return err
 	} else if emailInUse {
 		return core.ErrEmailAlreadyExists
@@ -133,9 +133,14 @@ func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain
 // If the update is successful, it returns the updated user object.
 // In case of an error during the update, it logs the error and returns it.
 func (u *UserService) UpdateUserFields(ctx context.Context, id uuid.UUID, fields map[string]any) (*domain.User, error) {
+	// Validate email format
+	if emailValid := utils.IsEmailValid(fields["email"].(string)); emailValid != nil {
+		return nil, core.ErrInvalidEmail
+	}
+
 	// Check if the email is already in use by another user
 	if email, ok := fields["email"].(string); ok {
-		if emailInUse, err := u.isEmailInUse(ctx, email, id); err != nil {
+		if emailInUse, err := utils.IsEmailInUse(u.usr, ctx, email, id); err != nil {
 			return nil, err
 		} else if emailInUse {
 			return nil, core.ErrEmailAlreadyExists
@@ -163,35 +168,5 @@ func (u *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	return nil
-}
-
-// isEmailInUse checks if the given email is already in use by another user in the repository.
-// It excludes the user with the specified excludeID from the check.
-// Returns true if the email is in use by a different user, false otherwise.
-// Returns an error if there is a problem accessing the repository.
-func (u *UserService) isEmailInUse(ctx context.Context, email string, excludeID uuid.UUID) (bool, error) {
-	existingUser, err := u.usr.FindByEmail(ctx, email)
-	if err != nil {
-		if errors.Is(err, core.ErrEmailAlreadyExists) {
-			return false, nil
-		}
-
-		return false, nil
-	}
-
-	if excludeID != uuid.Nil && existingUser.ID == excludeID {
-		return false, nil
-	}
-
-	return true, nil
-}
-
-func (u *UserService) isEmailValid(email string) error {
-	// Use a simple regex to validate the email format
-	const emailRegex = `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	if !regexp.MustCompile(emailRegex).MatchString(email) {
-		return core.ErrInvalidEmail
-	}
 	return nil
 }
