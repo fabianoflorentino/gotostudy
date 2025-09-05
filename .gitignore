@@ -25,3 +25,4 @@ go.work.sum
 .env
 tmp/build-errors.log
 *.log**
+**.html**
