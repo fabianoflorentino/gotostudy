@@ -24,23 +24,22 @@ import (
 func InitDB() (*gorm.DB, error) {
 
 	dsn := setPostgresConnectionString()
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  dsn,
-		PreferSimpleProtocol: true,
-	}), &gorm.Config{})
+	db, err := gorm.Open(postgres.New(postgres.Config{DSN: dsn, PreferSimpleProtocol: true}), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
 
 	// Enable the pgcrypto extension
-	if err := EnablePgcryptoExtension(db); err != nil {
+	if err := enablePgcryptoExtension(db); err != nil {
 		log.Fatalf("failed to enable pgcrypto extension: %v", err)
 	}
 
-	if err := runMigrations(db,
-		domain.User{},
-		domain.Task{},
-	); err != nil {
+	models, err := getAllModels()
+	if err != nil {
+		log.Fatalf("failed to get models: %v", err)
+	}
+
+	if err := runMigrations(db, models...); err != nil {
 		log.Fatalf("failed to run migrations: %v", err)
 	}
 
@@ -48,7 +47,7 @@ func InitDB() (*gorm.DB, error) {
 }
 
 // enablePgcryptoExtension checks if the pgcrypto extension exists and creates it if not.
-func EnablePgcryptoExtension(db *gorm.DB) error {
+func enablePgcryptoExtension(db *gorm.DB) error {
 	var exists bool
 
 	createQuery := "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
@@ -107,4 +106,12 @@ func runMigrations(db *gorm.DB, models ...any) error {
 	}
 
 	return nil
+}
+
+// getAllModels returns a slice of all models to be migrated.
+func getAllModels() ([]any, error) {
+	return []any{
+		domain.User{},
+		domain.Task{},
+	}, nil
 }
