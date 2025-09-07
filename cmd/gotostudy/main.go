@@ -5,15 +5,19 @@
 package main
 
 import (
-	"github.com/fabianoflorentino/gotostudy/config"
+	"log"
+
 	"github.com/fabianoflorentino/gotostudy/internal/app"
 	"github.com/fabianoflorentino/gotostudy/internal/server"
+	"github.com/joho/godotenv"
 )
 
 // init initializes the application by loading environment variables and initializing the database.
 // It is called before the main function.
 func init() {
-	config.LoadEnv()
+	if err := godotenv.Load("config/.env"); err != nil {
+		log.Fatalf("Error loading .env file")
+	}
 }
 
 // main is the entry point of the application.
