@@ -15,7 +15,7 @@ import (
 // init initializes the application by loading environment variables and initializing the database.
 // It is called before the main function.
 func init() {
-	if err := godotenv.Load("config/.env"); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 }
