@@ -104,7 +104,7 @@ func (m *mockUserRepository) Delete(ctx context.Context, id uuid.UUID) error {
 type mockUserRepositoryWithError struct{}
 
 func (m *mockUserRepositoryWithError) FindAll(ctx context.Context) ([]*domain.User, error) {
-	return nil, fmt.Errorf("simulated error")
+	return nil, core.ErrFindAllUsers
 }
 
 func (m *mockUserRepositoryWithError) FindByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
@@ -112,11 +112,11 @@ func (m *mockUserRepositoryWithError) FindByID(ctx context.Context, id uuid.UUID
 }
 
 func (m *mockUserRepositoryWithError) FindByEmail(ctx context.Context, email string) (*domain.User, error) {
-	return nil, fmt.Errorf("simulated error")
+	return nil, core.ErrFindByEmail
 }
 
 func (m *mockUserRepositoryWithError) Save(ctx context.Context, user *domain.User) error {
-	return fmt.Errorf("simulated error")
+	return core.ErrSaveUser
 }
 
 func (m *mockUserRepositoryWithError) Update(ctx context.Context, id uuid.UUID, user *domain.User) error {
@@ -128,7 +128,7 @@ func (m *mockUserRepositoryWithError) UpdateFields(ctx context.Context, id uuid.
 }
 
 func (m *mockUserRepositoryWithError) Delete(ctx context.Context, id uuid.UUID) error {
-	return fmt.Errorf("simulated error")
+	return core.ErrDeleteUser
 }
 
 func TestRegisterUser(t *testing.T) {

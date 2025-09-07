@@ -11,4 +11,8 @@ var (
 	ErrInvalidTaskID      = errors.New("invalid task ID")
 	ErrTaskNotFound       = errors.New("task not found")
 	ErrInvalidEmail       = errors.New("invalid email format")
+	ErrFindAllUsers       = errors.New("error finding all users")
+	ErrFindByEmail        = errors.New("error finding user by email")
+	ErrSaveUser           = errors.New("error saving user")
+	ErrDeleteUser         = errors.New("error deleting user")
 )
