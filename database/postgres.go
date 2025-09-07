@@ -74,13 +74,13 @@ func enablePgcryptoExtension(db *gorm.DB) error {
 // It returns a string that can be used to connect to the PostgreSQL database.
 func setPostgresConnectionString() string {
 	var (
-		username string = os.Getenv("POSTGRES_USER")
-		host     string = os.Getenv("POSTGRES_HOST")
-		password string = os.Getenv("POSTGRES_PASSWORD")
-		database string = os.Getenv("POSTGRES_DB")
-		port     string = os.Getenv("POSTGRES_PORT")
-		sslmode  string = os.Getenv("POSTGRES_SSLMODE")
-		timezone string = os.Getenv("POSTGRES_TIMEZONE")
+		username = os.Getenv("POSTGRES_USER")
+		host     = os.Getenv("POSTGRES_HOST")
+		password = os.Getenv("POSTGRES_PASSWORD")
+		database = os.Getenv("POSTGRES_DB")
+		port     = os.Getenv("POSTGRES_PORT")
+		sslmode  = os.Getenv("POSTGRES_SSLMODE")
+		timezone = os.Getenv("POSTGRES_TIMEZONE")
 	)
 
 	return "user=" + username + " password=" + password + " host=" + host +
