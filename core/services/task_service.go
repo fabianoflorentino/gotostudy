@@ -38,9 +38,9 @@ func NewTaskService(t ports.TaskRepository, u ports.UserRepository) *TaskService
 // It first checks if the user exists; if not, it returns core.ErrUserNotFound.
 // If the user exists, it attempts to save the task using the underlying task repository.
 // Returns an error if saving fails, or nil on success.
-func (t *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, task *domain.Task) error {
+func (t *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, task *domain.Task) (uuid.UUID, error) {
 	if !t.userExists(ctx, userID) {
-		return core.ErrUserNotFound
+		return uuid.Nil, core.ErrUserNotFound
 	}
 
 	task.ID = uuid.New()
@@ -49,10 +49,10 @@ func (t *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, task *do
 	task.UpdatedAt = time.Now()
 
 	if err := t.tsk.Save(ctx, userID, task); err != nil {
-		return err
+		return uuid.Nil, core.ErrCreateTask
 	}
 
-	return nil
+	return task.ID, core.ErrCreateTask
 }
 
 // FindUserTasks retrieves all tasks associated with the specified user ID.
