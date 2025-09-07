@@ -43,7 +43,7 @@ func (t *TaskController) CreateTask(c *gin.Context) {
 
 	userID := params[0]
 
-	if err := t.task.CreateTask(c, userID, task); err != nil {
+	if _, err := t.task.CreateTask(c, userID, task); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"error": err.Error()})
 		return
 	}
