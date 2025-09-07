@@ -4,7 +4,7 @@ services:
     image: postgres:17-alpine3.22
     container_name: gtsdb
     hostname: gtsdb
-    env_file: ./config/.env
+    env_file: ./.env
     restart: unless-stopped
     ports:
       - ${POSTGRES_LOCAL_PORT:-35432}:5432
@@ -21,7 +21,7 @@ services:
     image: fabianoflorentino/gts:v0.0.1
     container_name: gts
     hostname: gts
-    env_file: ./config/.env
+    env_file: ./.env
     build:
       context: .
       dockerfile: build/Dockerfile
