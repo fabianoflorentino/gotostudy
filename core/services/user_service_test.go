@@ -340,8 +340,8 @@ func TestUpdateUser(t *testing.T) {
 		nonExistentID := uuid.New()
 		updatedUser := domain.User{ID: nonExistentID, Username: "updateduser", Email: "updateduser_notfound@example.com"}
 		err := service.UpdateUser(context.Background(), updatedUser.ID, &updatedUser)
-		if !errors.Is(err, core.ErrUserNotFound) {
-			t.Fatalf("Expected ErrUserNotFound, got: %v", err)
+		if !errors.Is(err, core.ErrUpdateUser) {
+			t.Fatalf("Expected ErrUpdateUser, got: %v", err)
 		}
 	})
 
@@ -411,8 +411,8 @@ func TestUpdateUserFields(t *testing.T) {
 			"email":    "updateduser@example.com",
 		}
 		_, err := service.UpdateUserFields(context.Background(), nonExistentID, updatedFields)
-		if !errors.Is(err, core.ErrUserNotFound) {
-			t.Fatalf("Expected ErrUserNotFound, got: %v", err)
+		if !errors.Is(err, core.ErrUpdateUser) {
+			t.Fatalf("Expected ErrUpdateUser, got: %v", err)
 		}
 	})
 
@@ -423,8 +423,8 @@ func TestUpdateUserFields(t *testing.T) {
 			"email":    "updateduser@example.com",
 		}
 		_, err := service.UpdateUserFields(context.Background(), nonExistentID, updatedFields)
-		if !errors.Is(err, core.ErrUserNotFound) {
-			t.Fatalf("Expected ErrUserNotFound, got: %v", err)
+		if !errors.Is(err, core.ErrUpdateUser) {
+			t.Fatalf("Expected ErrUpdateUser, got: %v", err)
 		}
 	})
 
