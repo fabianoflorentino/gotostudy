@@ -15,4 +15,5 @@ var (
 	ErrFindByEmail        = errors.New("error finding user by email")
 	ErrSaveUser           = errors.New("error saving user")
 	ErrDeleteUser         = errors.New("error deleting user")
+	ErrUpdateUser         = errors.New("error updating user")
 )

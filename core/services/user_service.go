@@ -61,7 +61,7 @@ func (u *UserService) RegisterUser(ctx context.Context, user *domain.User) (*dom
 
 	if err := u.usr.Save(ctx, user); err != nil {
 		log.Printf("Error saving user: %v", err)
-		return nil, err
+		return nil, core.ErrSaveUser
 	}
 
 	return user, nil
@@ -73,7 +73,7 @@ func (u *UserService) RegisterUser(ctx context.Context, user *domain.User) (*dom
 func (u *UserService) GetAllUsers(ctx context.Context) ([]*domain.User, error) {
 	users, err := u.usr.FindAll(ctx)
 	if err != nil {
-		return nil, err
+		return nil, core.ErrFindAllUsers
 	}
 
 	return users, nil
@@ -121,7 +121,7 @@ func (u *UserService) UpdateUser(ctx context.Context, id uuid.UUID, user *domain
 
 	if err := u.usr.Update(ctx, id, user); err != nil {
 		log.Printf("Error updating user: %v", err)
-		return err
+		return core.ErrUpdateUser
 	}
 
 	return nil
@@ -141,7 +141,7 @@ func (u *UserService) UpdateUserFields(ctx context.Context, id uuid.UUID, fields
 	// Check if the email is already in use by another user
 	if email, ok := fields["email"].(string); ok {
 		if emailInUse, err := utils.IsEmailInUse(u.usr, ctx, email, id); err != nil {
-			return nil, err
+			return nil, core.ErrEmailAlreadyExists
 		} else if emailInUse {
 			return nil, core.ErrEmailAlreadyExists
 		}
@@ -154,7 +154,7 @@ func (u *UserService) UpdateUserFields(ctx context.Context, id uuid.UUID, fields
 	updatedUser, err := u.usr.UpdateFields(ctx, id, fields)
 	if err != nil {
 		log.Printf("Error updating user fields: %v", fields)
-		return nil, err
+		return nil, core.ErrUpdateUser
 	}
 
 	return updatedUser, nil
@@ -165,7 +165,7 @@ func (u *UserService) UpdateUserFields(ctx context.Context, id uuid.UUID, fields
 func (u *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	if err := u.usr.Delete(ctx, id); err != nil {
 		log.Printf("Error deleting user: %v", err)
-		return err
+		return core.ErrDeleteUser
 	}
 
 	return nil
