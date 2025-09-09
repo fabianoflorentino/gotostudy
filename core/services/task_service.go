@@ -18,6 +18,7 @@ import (
 	"github.com/fabianoflorentino/gotostudy/core"
 	"github.com/fabianoflorentino/gotostudy/core/domain"
 	"github.com/fabianoflorentino/gotostudy/core/ports"
+	"github.com/fabianoflorentino/gotostudy/internal/utils"
 	"github.com/google/uuid"
 )
 
@@ -39,8 +40,14 @@ func NewTaskService(t ports.TaskRepository, u ports.UserRepository) *TaskService
 // If the user exists, it attempts to save the task using the underlying task repository.
 // Returns an error if saving fails, or nil on success.
 func (t *TaskService) CreateTask(ctx context.Context, userID uuid.UUID, task *domain.Task) (uuid.UUID, error) {
+	// Check if the user exists before creating a task.
 	if !t.userExists(ctx, userID) {
 		return uuid.Nil, core.ErrUserNotFound
+	}
+
+	// Validate task title
+	if !utils.IsTaskTitleValid(task.Title) {
+		return uuid.Nil, core.ErrTaskTitleValid
 	}
 
 	task.ID = uuid.New()
