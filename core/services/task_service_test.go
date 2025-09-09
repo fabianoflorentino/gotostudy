@@ -104,9 +104,36 @@ func TestCreateTask(t *testing.T) {
 		Context context.Context
 		Task    domain.Task
 	}{
-		{context.Background(), domain.Task{ID: uuid.New(), UserID: userID, Title: "Test Task 1", Description: "This is a test task 1", Completed: false}},
-		{context.Background(), domain.Task{ID: uuid.New(), UserID: userID, Title: "Test Task 2", Description: "This is a test task 2", Completed: true}},
-		{context.Background(), domain.Task{ID: uuid.New(), UserID: userID, Title: "Test Task 3", Description: "This is a test task 3", Completed: false}},
+		{
+			context.Background(),
+			domain.Task{
+				ID:          uuid.New(),
+				UserID:      userID,
+				Title:       "Test Task 1",
+				Description: "This is a test task 1",
+				Completed:   false,
+			},
+		},
+		{
+			context.Background(),
+			domain.Task{
+				ID:          uuid.New(),
+				UserID:      userID,
+				Title:       "Test Task 2",
+				Description: "This is a test task 2",
+				Completed:   true,
+			},
+		},
+		{
+			context.Background(),
+			domain.Task{
+				ID:          uuid.New(),
+				UserID:      userID,
+				Title:       "Test Task 3",
+				Description: "This is a test task 3",
+				Completed:   false,
+			},
+		},
 	}
 
 	t.Run("CreateTask", func(t *testing.T) {
@@ -127,7 +154,13 @@ func TestCreateTask(t *testing.T) {
 			Email:    "testuser@example.com",
 		}
 
-		task := domain.Task{ID: uuid.New(), UserID: userID, Title: "Unique Task", Description: "This is a unique task", Completed: false}
+		task := domain.Task{
+			ID:          uuid.New(),
+			UserID:      userID,
+			Title:       "Unique Task",
+			Description: "This is a unique task",
+			Completed:   false,
+		}
 
 		_, err := taskService.CreateTask(context.Background(), userID, &task)
 		if err != core.ErrCreateTask {
@@ -140,10 +173,67 @@ func TestCreateTask(t *testing.T) {
 		}
 	})
 
+	t.Run("CreateTask_Invalid", func(t *testing.T) {
+		mockUserRepo.users[userID.String()] = &domain.User{
+			ID:       userID,
+			Username: "testuser",
+			Email:    "testuser@example.com",
+		}
+
+		t.Run("CreateTask_InvalidTitle", func(t *testing.T) {
+			task := domain.Task{
+				ID:          uuid.New(),
+				UserID:      userID,
+				Title:       "-",
+				Description: "This is an invalid task",
+				Completed:   false,
+			}
+			_, err := taskService.CreateTask(context.Background(), userID, &task)
+			if err != core.ErrTaskTitleValid {
+				t.Errorf("Expected ErrTaskTitleValid, got: %v", err)
+			}
+		})
+
+		t.Run("CreateTask_EmptyUserID", func(t *testing.T) {
+			task := domain.Task{
+				ID:          uuid.New(),
+				UserID:      uuid.Nil,
+				Title:       "Valid Title",
+				Description: "This is an invalid task",
+				Completed:   false,
+			}
+			_, err := taskService.CreateTask(context.Background(), uuid.Nil, &task)
+			if err != core.ErrUserNotFound {
+				t.Errorf("Expected ErrUserNotFound, got: %v", err)
+			}
+		})
+
+		t.Run("CreateTask_NonExistentUser", func(t *testing.T) {
+			nonExistentUserID := uuid.New()
+			task := domain.Task{
+				ID:          uuid.New(),
+				UserID:      nonExistentUserID,
+				Title:       "Valid Title",
+				Description: "This is an invalid task",
+				Completed:   false,
+			}
+			_, err := taskService.CreateTask(context.Background(), nonExistentUserID, &task)
+			if err != core.ErrUserNotFound {
+				t.Errorf("Expected ErrUserNotFound, got: %v", err)
+			}
+		})
+	})
+
 	t.Run("CreateTaskWithError", func(t *testing.T) {
 		mockTaskRepoWithError := &mockTaskRepositoryWithError{}
 		taskServiceWithError := NewTaskService(mockTaskRepoWithError, mockUserRepo)
-		task := domain.Task{ID: uuid.New(), UserID: userID, Title: "Error Task", Description: "This should fail", Completed: false}
+		task := domain.Task{
+			ID:          uuid.New(),
+			UserID:      userID,
+			Title:       "Error Task",
+			Description: "This should fail",
+			Completed:   false,
+		}
 		// Ensure user exists in mockUserRepo to avoid user not found error
 		mockUserRepo.users[userID.String()] = &domain.User{
 			ID:        userID,
