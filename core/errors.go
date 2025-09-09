@@ -19,8 +19,9 @@ var (
 )
 
 var (
-	ErrCreateTask    = errors.New("error creating task")
-	ErrFindUserTasks = errors.New("error finding user tasks")
-	ErrUpdateTask    = errors.New("error updating task")
-	ErrDeleteTask    = errors.New("error deleting task")
+	ErrCreateTask     = errors.New("error creating task")
+	ErrFindUserTasks  = errors.New("error finding user tasks")
+	ErrUpdateTask     = errors.New("error updating task")
+	ErrDeleteTask     = errors.New("error deleting task")
+	ErrTaskTitleValid = errors.New("invalid task title")
 )
