@@ -248,3 +248,60 @@ func TestCreateTask(t *testing.T) {
 		}
 	})
 }
+
+func TestFindUserTask(t *testing.T) {
+	mockTaskRepo := newMockTaskRepository()
+	mockUserRepo := newMockUserRepository()
+	taskService := NewTaskService(mockTaskRepo, mockUserRepo)
+	userID := uuid.New()
+
+	mockUserRepo.users[userID.String()] = &domain.User{
+		ID:       userID,
+		Username: "testuser",
+		Email:    "testuser@example.com",
+	}
+
+	task1 := &domain.Task{
+		ID:          uuid.New(),
+		UserID:      userID,
+		Title:       "Task 1",
+		Description: "This is task 1",
+		Completed:   false,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+	task2 := &domain.Task{
+		ID:          uuid.New(),
+		UserID:      userID,
+		Title:       "Task 2",
+		Description: "This is task 2",
+		Completed:   true,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	mockTaskRepo.Save(context.Background(), userID, task1)
+	mockTaskRepo.Save(context.Background(), userID, task2)
+
+	findUserTasksSuccess := func(t *testing.T) {
+		tasks, err := taskService.FindUserTasks(context.Background(), userID)
+		if err != nil {
+			t.Fatalf("Expected no error, got: %v", err)
+		}
+		if len(tasks) != 2 {
+			t.Errorf("Expected 2 tasks, got: %d", len(tasks))
+		}
+	}
+	t.Run("FindUserTasks_Success", findUserTasksSuccess)
+
+	findUserTasksNonExistentUser := func(t *testing.T) {
+		nonExistentUserID := uuid.New()
+
+		_, err := taskService.FindUserTasks(context.Background(), nonExistentUserID)
+
+		if err != core.ErrUserNotFound {
+			t.Fatalf("Expected ErrUserNotFound, got: %v", err)
+		}
+	}
+	t.Run("FindUserTasks_NonExistentUser", findUserTasksNonExistentUser)
+}
